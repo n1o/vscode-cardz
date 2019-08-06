@@ -25,7 +25,7 @@ export class StudyNode extends vscode.TreeItem {
 }
 
 
-export class MdTreeProvider implements vscode.TreeDataProvider<StudyNode> {
+export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<StudyNode | undefined> = new vscode.EventEmitter<StudyNode | undefined>();
 	readonly onDidChangeTreeData: vscode.Event<StudyNode | undefined> = this._onDidChangeTreeData.event;

@@ -10,16 +10,28 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.helloWorld"
+		"onView:studyNotes"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "extension.helloWorld",
-				"title": "Hello World"
-			}
-		]
+		"viewsContainers": {
+			"activitybar": [
+			  {
+				"id": "study-notes",
+				"title": "Study Notes",
+				"icon": "media/dep.svg"
+			  }
+			]
+		},
+		"views": {
+			"study-notes": [
+				{
+					"id": "studyNotes",
+					"name": "Study Notes"
+				}
+			]
+		},
+		"commands": []
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

@@ -9,7 +9,10 @@ export class StudyNode extends vscode.TreeItem {
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 		public readonly command?: vscode.Command
 	) {
-		super(filePath.split(path.sep).pop(), collapsibleState);		
+		super(filePath.split(path.sep).pop() || "", collapsibleState);
+		if (!filePath.split(path.sep).pop()) {
+			throw new Error("Failed to locate file label");
+		}
 	}
 
 	get tooltip(): string {
@@ -33,7 +36,9 @@ export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode
 	constructor(
 		private readonly workSpaceRoot: string
 	) {
-		
+		if (!workSpaceRoot) {
+			throw new Error("Invalid directory");
+		}
 	}
 	private async getStudyNote(localPaht: string): Promise<StudyNode> {
 		if (!(await promises.stat(localPaht)).isDirectory()) {

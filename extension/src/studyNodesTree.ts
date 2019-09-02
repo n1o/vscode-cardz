@@ -24,9 +24,7 @@ export class StudyNode extends vscode.TreeItem {
 	}
 
 	contextValue = 'studyNote';
-
 }
-
 
 export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode> {
 

@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:studyNotes"
+		"onView:studyNotes",
+		"onCommand:studyNotes.webView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -19,7 +20,7 @@
 			  {
 				"id": "study-notes",
 				"title": "Study Notes",
-				"icon": "media/dep.svg"
+				"icon": "media/extension/img/dep.svg"
 			  }
 			]
 		},
@@ -31,7 +32,13 @@
 				}
 			]
 		},
-		"commands": []
+		"commands": [
+			{
+				"command": "studyNotes.webView",
+				"title": "Study Notes",
+				"category": "Study Notes"
+			  }
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

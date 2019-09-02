@@ -22,6 +22,6 @@ import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
   }
 })
 export default class Home extends Vue {
-  thing: String;
+  public thing!: String;
 }
 </script>

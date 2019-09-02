@@ -7,12 +7,11 @@ import webView from './webView';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	console.log("Something");
 	const studyNoteProvider = new StudyNotesTreeProvider(vscode.workspace.rootPath || "");
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.webView', webView)
+		vscode.commands.registerCommand('studyNotes.webView', () => webView(context))
 	);
 }
 

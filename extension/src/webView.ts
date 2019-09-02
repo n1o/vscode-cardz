@@ -1,13 +1,17 @@
 
 import * as vscode from 'vscode';
+import * as path from 'path';
 
-export default function webView() {
+export default function webView(context: vscode.ExtensionContext) {
 
     const panel = vscode.window.createWebviewPanel(
         'studyNode',
         'Study Notes',
         vscode.ViewColumn.One,
-        {}
+        {
+            localResourceRoots: [vscode.Uri.file(context.extensionPath)]
+
+        }
     );
 
     panel.webview.html = getWebviewContent();

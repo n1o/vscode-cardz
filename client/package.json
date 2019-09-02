@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "export": "vue-cli-service build --inline-vue --dest ../extension/media/web",
+    "export": "vue-cli-service build --inline-vue --dest ../extension/web",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit"
   },

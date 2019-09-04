@@ -10,36 +10,20 @@ export default async function webView(context: vscode.ExtensionContext) {
         'Study Notes',
         vscode.ViewColumn.One,
         {
-            localResourceRoots: [vscode.Uri.file(context.extensionPath)],
             enableScripts: true
         }
     );
+    const mapping = new Map<string, vscode.Uri>();
     const sources = await walkDirectory(path.join(context.extensionPath, "web"));
 
-    const resources: vscode.Uri[] = [];
-    for (const p of sources){
-        if (p.endsWith("index.html")) {
-
-            const html = await fileAsString(p);
-            console.log(html);
-            panel.webview.html = html;
+    let html = "";
+    for (const s of sources) {
+        if (s.endsWith("index.html")) {
+            html = await fileAsString(s);
         } else {
-            resources.push(vscode.Uri.file(p).with({ scheme: 'vscode-resource'} ));            
+            mapping.set(s.split("web")[1],  vscode.Uri.file(s));
         }
     }
+    panel.webview.html = [...mapping.entries()].reduce((acc, [k,v]) => acc.replace(k,v) , html);
+    console.log(panel.webview.html);
 }
-
-
-function getWebviewContent() {
-    return `<!DOCTYPE html>
-  <html lang="en">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Cat Coding</title>
-  </head>
-  <body>
-      <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
-  </body>
-  </html>`;
-  }

@@ -1,21 +1,34 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { walkDirectory, fileAsString } from './util/walk';
 
-export default function webView(context: vscode.ExtensionContext) {
+export default async function webView(context: vscode.ExtensionContext) {
 
     const panel = vscode.window.createWebviewPanel(
         'studyNode',
         'Study Notes',
         vscode.ViewColumn.One,
         {
-            localResourceRoots: [vscode.Uri.file(context.extensionPath)]
-
+            localResourceRoots: [vscode.Uri.file(context.extensionPath)],
+            enableScripts: true
         }
     );
+    const sources = await walkDirectory(path.join(context.extensionPath, "web"));
 
-    panel.webview.html = getWebviewContent();
+    const resources: vscode.Uri[] = [];
+    for (const p of sources){
+        if (p.endsWith("index.html")) {
+
+            const html = await fileAsString(p);
+            console.log(html);
+            panel.webview.html = html;
+        } else {
+            resources.push(vscode.Uri.file(p).with({ scheme: 'vscode-resource'} ));            
+        }
+    }
 }
+
 
 function getWebviewContent() {
     return `<!DOCTYPE html>

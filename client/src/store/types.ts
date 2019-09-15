@@ -1,8 +1,8 @@
-export interface CurrentStudyNote {
+export interface StudyNote {
     name: string;
     lastReviewed: Date;
   }
 
 export interface State {
-    currentStudyNote?: CurrentStudyNote;
+    currentStudyNote?: StudyNote;
   }

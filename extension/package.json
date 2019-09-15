@@ -11,7 +11,7 @@
 	],
 	"activationEvents": [
 		"onView:studyNotes",
-		"onCommand:studyNotes.webView"
+		"onCommand:studyNotes.info"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -34,11 +34,19 @@
 		},
 		"commands": [
 			{
-				"command": "studyNotes.webView",
-				"title": "Study Notes",
-				"category": "Study Notes"
+				"command": "studyNotes.info",
+				"title": "Info",
+				"category": "Study Notes Info"
 			}
-		]
+		],
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "studyNotes.info",
+					"when": "view == studyNotes && viewItem == studyNote"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

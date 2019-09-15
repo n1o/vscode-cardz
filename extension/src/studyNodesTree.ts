@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { promises } from 'fs';
 import * as path from 'path';
 
+
 export class StudyNode extends vscode.TreeItem {
 
 	constructor(
@@ -22,7 +23,6 @@ export class StudyNode extends vscode.TreeItem {
 	get description(): string {
 		return `${this.filePath}`;
 	}
-
 	contextValue = 'studyNote';
 }
 

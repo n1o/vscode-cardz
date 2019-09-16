@@ -15,8 +15,3 @@ export async function walkDirectory(rootPath: string): Promise<string[]> {
         return [rootPath];
     }
 }
-
-export async function fileAsString(path: string): Promise<string> {
-    const f = await promises.readFile(path, 'utf8');
-    return f.toString();
-}

@@ -9,33 +9,38 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+import { getModule } from 'vuex-module-decorators';
+import { StudyNote } from './store/types';
+import StudyNotesModule from './store/notes';
+
+const notes = getModule(StudyNotesModule);
 
 declare var acquireVsCodeApi: any;
 
 @Component({})
 export default class App extends Vue {
   private vscode: any;
-
   private mounted() {
-    if (!this.vscode) {
-       this.vscode = acquireVsCodeApi();
+    window.addEventListener('message', (event: any) => {
+
+      const { command, payload } = event.data;
+      if (command === 'study_note') {
+        const { path, name, lastReview } = payload;
+        notes.setStudyNote( { name, lastReviewed: lastReview });
+      }
+    });
+
+    if (!this.vscode && acquireVsCodeApi) {
+      this.vscode = acquireVsCodeApi();
     }
     if (this.vscode) {
       this.vscode.postMessage({ command: 'ready' });
     }
+
+
     this.$router.push({name: 'home'});
-    window.addEventListener('study_note', (event: any) => {
-      const { command, payload } = event;
-      if(command === 'study_note') {
-        const { path, name, lastReviewd } = payload;
-      } 
-    })
   }
 }
-// window.addEventListener('load_note', (listener: any) => {
-//   const { command, data } = listener.data;
-//   console.log(command, data);
-// })
 </script>
 
 <style src="./assets/tailwind.css">

@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { sep } from 'path';
 import { StudyNotesTreeProvider, StudyNode } from './studyNodesTree';
 import webView from './webView';
+import newNote from './newNote';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -23,6 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
 				webView(context, { name: editor.document.fileName.split(sep).pop()!, path: editor.document.fileName });
 			}
 		})
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context))
 	);
 }
 

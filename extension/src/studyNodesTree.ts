@@ -14,6 +14,12 @@ export class StudyNode extends vscode.TreeItem {
 		if (!filePath.split(path.sep).pop()) {
 			throw new Error("Failed to locate file label");
 		}
+
+		if(command) {
+			this.contextValue = 'studyNote';
+		} else {
+			this.contextValue = 'studyNoteParent';
+		}
 	}
 
 	get tooltip(): string {
@@ -23,7 +29,6 @@ export class StudyNode extends vscode.TreeItem {
 	get description(): string {
 		return `${this.filePath}`;
 	}
-	contextValue = 'studyNote';
 }
 
 export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode> {
@@ -38,19 +43,19 @@ export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode
 			throw new Error("Invalid directory");
 		}
 	}
-	private async getStudyNote(localPaht: string): Promise<StudyNode> {
-		if (!(await promises.stat(localPaht)).isDirectory()) {
+	private async getStudyNote(localPath: string): Promise<StudyNode> {
+		if (!(await promises.stat(localPath)).isDirectory()) {
 			return new StudyNode(
-				localPaht, 
+				localPath, 
 				vscode.TreeItemCollapsibleState.None,
 				{
-					command: "mdDependencies.openFile",
+					command: "studyNotes.openFile",
 					title: 'Open File',
-					arguments: [localPaht]
+					arguments: [localPath]
 				}
 				);
 		} else {
-			return new StudyNode(localPaht, vscode.TreeItemCollapsibleState.Collapsed);
+			return new StudyNode(localPath, vscode.TreeItemCollapsibleState.Collapsed);
 		}
 		
 	}

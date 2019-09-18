@@ -37,6 +37,11 @@
 				"command": "studyNotes.info",
 				"title": "Info",
 				"category": "Study Notes Info"
+			},
+			{
+				"command": "studyNotes.stats",
+				"title": "Card stats",
+				"category": "Study Note stats"
 			}
 		],
 		"menus": {

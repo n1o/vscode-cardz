@@ -22,7 +22,6 @@ export default class App extends Vue {
   private vscode: any;
   private mounted() {
     window.addEventListener('message', (event: any) => {
-
       const { command, payload } = event.data;
       if (command === 'study_note') {
         const { path, name, lastReview } = payload;

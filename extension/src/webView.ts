@@ -22,12 +22,11 @@ const htmlTemplate = `<!DOCTYPE html><html lang=en>
         <div id=app></div>
         {{#scripts}}
         <script src="{{src}}"></script>
-
         {{/scripts}}
     </body>
 </html>`;
 
-export default async function webView(context: vscode.ExtensionContext, node: StudyNode) {
+export default async function webView(context: vscode.ExtensionContext, node: { path: string, name: string }) {
 
     const panel = vscode.window.createWebviewPanel(
         'studyNode',
@@ -38,16 +37,12 @@ export default async function webView(context: vscode.ExtensionContext, node: St
             localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))]
         }
     );
-    // const mapping = new Map<string, string>();
-    const files = [];
+
     const sources = await walkDirectory(path.join(context.extensionPath, "media", "web"));
 
-    // let html = "";
-    for (const s of sources) {
-        if (!s.endsWith("index.html")) {
-            files.push({ src:  vscode.Uri.file(s).with({ scheme: 'vscode-resource' }).toString() });
-        }
-    }
+    const files = sources
+        .filter(s => !s.endsWith("index.html"))
+        .map(s => { return { src:  vscode.Uri.file(s).with({ scheme: 'vscode-resource' }).toString() }; });
 
     const args = {
         css: files.filter(f => f.src.endsWith(".css")),
@@ -57,8 +52,7 @@ export default async function webView(context: vscode.ExtensionContext, node: St
     panel.webview.onDidReceiveMessage(message => {
         switch(message.command) {
             case 'ready': {
-                const payload = { path: node.filePath, name: node.label, lastReview: new Date() };
-                console.log(payload);
+                const payload = { ...node, lastReview: new Date() };
                 panel.webview.postMessage({ command: 'study_note', payload });
             }
         }

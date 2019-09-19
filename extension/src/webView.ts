@@ -2,7 +2,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { walkDirectory } from './util/walk';
-import { StudyNode } from './studyNodesTree';
 import { render } from 'mustache';
 
 

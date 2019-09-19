@@ -1,10 +1,20 @@
 import * as vscode from 'vscode';
-import { sep, parse } from 'path';
+import { sep } from 'path';
 import { promises } from 'fs';
 import * as MarkdownIt from 'markdown-it';
 import { load } from 'cheerio';
+import { DeckService } from './service/deckService';
+import { render } from 'mustache';
+import { findAllImagePaths } from './util/mdUtils';
 
-export default async function newNote(context: vscode.ExtensionContext) {
+const newCardMd = `---
+Deck: {{deck}}
+Front: {{{front}}}
+Back:
+---
+{{{content}}}`;
+
+export default async function newNote(context: vscode.ExtensionContext, decsService: DeckService) {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
         const selection = editor.selection;
@@ -14,16 +24,35 @@ export default async function newNote(context: vscode.ExtensionContext) {
         const splited = file.path.split(sep);
         const fileName = splited.pop();
         const flashCardsDirectoryPath = [...splited, `.${fileName}.flashCards`].join(sep); 
-        console.log(flashCardsDirectoryPath);
         try {
             await promises.mkdir(flashCardsDirectoryPath);
         } catch (err) {}
 
-        const { name, content } = processMarkdown(text);
-        const flashCardName = name.replace(/[\W_]+/g, "_");
-        const f = await promises.open([flashCardsDirectoryPath, flashCardName].join(sep), "w");
-        await f.write(content);
-        await f.close();
+        const allDecs = await decsService.getAllDecks();
+
+        const quickPick = vscode.window.createQuickPick();
+        quickPick.items = allDecs.map( deck =>  { return { label: deck.deckName };});
+        quickPick.onDidChangeSelection( async selection => {
+            if (selection[0]) {
+                const deck = selection[0].label;
+                quickPick.value = deck;
+                quickPick.dispose();
+
+                const { name, content } = processMarkdown(text);
+
+                const flashCardName = `${name.replace(/[\W_]+/g, "_")}.md`;
+        
+                const flashCardPath = [flashCardsDirectoryPath, flashCardName].join(sep);
+                const f = await promises.open(flashCardPath, "w");
+                await f.write(render(newCardMd, { deck, front:  name, content }));
+                await f.close();
+                vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(flashCardPath));
+            }
+        });
+        quickPick.canSelectMany = false;
+        quickPick.title = "Select A Deck";
+        quickPick.onDidHide(() => quickPick.dispose());
+        quickPick.show();
     } else {
         vscode.window.showErrorMessage("Select the text you want to make a flashcard from");
     }
@@ -42,6 +71,13 @@ function processMarkdown(content: string): FlashCard {
 
     if (!header) {
         throw new Error("Failed to find header");
+    }
+
+    for (const imagePath of findAllImagePaths(content)) {
+        // Check if it not an absolute path!
+        if(!imagePath.startsWith(sep)) {
+            content = content.replace(imagePath, `../${imagePath}`);
+        }
     }
 
     return {

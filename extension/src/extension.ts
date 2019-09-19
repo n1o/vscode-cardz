@@ -5,10 +5,11 @@ import { sep } from 'path';
 import { StudyNotesTreeProvider, StudyNode } from './studyNodesTree';
 import webView from './webView';
 import newNote from './newNote';
+import { AnkiDeckService } from './service/deckService';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 	const studyNoteProvider = new StudyNotesTreeProvider(vscode.workspace.rootPath || "");
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
@@ -26,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context))
+		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, new AnkiDeckService()))
 	);
 }
 

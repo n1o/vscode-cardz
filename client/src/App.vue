@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <div id="nav flex flex-row">
+    <!-- <div id="nav flex flex-row">
       <router-link class="px-4" :to="{name: 'home'}">Card Overview</router-link>
-    </div>
+    </div> -->
     <router-view/>
   </div>
 </template>
@@ -26,6 +26,7 @@ export default class App extends Vue {
       if (command === 'study_note') {
         const { path, name, lastReview } = payload;
         notes.setStudyNote( { name, lastReviewed: lastReview });
+        this.$router.push({name: 'home'});
       }
     });
 
@@ -35,9 +36,6 @@ export default class App extends Vue {
     if (this.vscode) {
       this.vscode.postMessage({ command: 'ready' });
     }
-
-
-    this.$router.push({name: 'home'});
   }
 }
 </script>

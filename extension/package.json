@@ -79,9 +79,11 @@
 		"webpack-cli": "^3.3.6"
 	},
 	"dependencies": {
+		"@types/axios": "^0.14.0",
 		"@types/cheerio": "^0.22.13",
 		"@types/markdown-it": "0.0.8",
 		"@types/mustache": "^0.8.32",
+		"axios": "^0.19.0",
 		"cheerio": "^1.0.0-rc.3",
 		"markdown-it": "^10.0.0",
 		"mustache": "^3.1.0"

@@ -46,7 +46,10 @@ export default async function newNote(context: vscode.ExtensionContext, decsServ
                 const f = await promises.open(flashCardPath, "w");
                 await f.write(render(newCardMd, { deck, front:  name, content }));
                 await f.close();
-                vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(flashCardPath));
+                const flashCardUri = vscode.Uri.parse(flashCardPath);
+                decsService.storeCard({ deck, front: name, back: content }, flashCardUri);
+                vscode.commands.executeCommand('vscode.open', flashCardUri);
+                
             }
         });
         quickPick.canSelectMany = false;

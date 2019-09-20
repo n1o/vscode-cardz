@@ -4,12 +4,28 @@ import * as vscode from 'vscode';
 import { sep } from 'path';
 import { StudyNotesTreeProvider, StudyNode } from './studyNodesTree';
 import webView from './webView';
-import newNote from './newNote';
+import newNote from './commands/newNote';
 import { AnkiDeckService } from './service/deckService';
+import { CardService } from './service/cardService';
+import { createConnection } from "typeorm";
+import { FlashCardEntity } from './entities/FlashCardEntity';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
+
 export async function activate(context: vscode.ExtensionContext) {
+	const ankiService  = new AnkiDeckService(vscode.workspace.rootPath!);
+	const decksService = new CardService();
+
+	await createConnection({
+		type: "sqlite",
+		database: `${vscode.workspace.rootPath}${sep}database.sqlite`,
+		synchronize: true,
+		logging: false,
+		"entities": [
+			FlashCardEntity
+		],
+	 });
 	const studyNoteProvider = new StudyNotesTreeProvider(vscode.workspace.rootPath || "");
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
@@ -27,7 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	);
 	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, new AnkiDeckService()))
+		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, ankiService, decksService))
 	);
 }
 

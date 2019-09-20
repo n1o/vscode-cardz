@@ -4,6 +4,8 @@ import { basename, sep } from 'path';
 import { promises } from 'fs';
 import { Uri } from 'vscode';
 import * as MarkdownIt from 'markdown-it';
+import { FlashCard } from './cardService';
+import { FlashCardEntity } from '../entities/FlashCardEntity';
 
 export interface Deck {
     deckName: string;
@@ -11,7 +13,8 @@ export interface Deck {
 
 export interface DeckService {
     getAllDecks(): Promise<Deck[]>;
-    storeCard(card: FlashCard, cardPath: Uri): Promise<void>;
+    createCard(card: FlashCardWithDeck, cardPath: Uri): Promise<string>;
+    updateCard(card: FlashCardWithDeck, cardPath: Uri): Promise<void>;
 }
 
 interface AnkiResponse<T> {
@@ -19,10 +22,8 @@ interface AnkiResponse<T> {
     error: string;
 }
 
-export interface FlashCard {
-    front: string;
-    back: string;
-    deck: string;
+export interface FlashCardWithDeck extends FlashCard {
+   deck: string;
 }
 
 interface AnkiAction<T> {
@@ -86,7 +87,8 @@ export class AnkiDeckService implements DeckService {
     }
 
     constructor(
-        private readonly ankiHost: string = "http://localhost:8765"
+        private readonly workDir: string,
+        private readonly ankiHost: string = "http://localhost:8765",
     ) {}
 
     async getAllDecks(): Promise<Deck[]> {
@@ -94,22 +96,22 @@ export class AnkiDeckService implements DeckService {
 
         const data = resp.data;
         if (data.error) {
-            throw new Error(`Failed to retrieve anki desck check if Anki connect is running at ${this.ankiHost}`);
+            throw new Error(`Failed to retrieve anki decks check if Anki connect is running at ${this.ankiHost}`);
         }
 
         return data.result.map(deckName => { return { deckName }; });
     }
 
-    async storeCard(card: FlashCard, cardPath: Uri): Promise<void> {
+    async createCard(card: FlashCardWithDeck, cardPath: Uri): Promise<string> {
         const allDecs = new Set([...(await this.getAllDecks()).map(d => d.deckName )]);
         if (!allDecs.has(card.deck)) {
             throw new Error(`Invalid deck ${card.deck} choose one of ${[...allDecs].join(',')}`);
         }
 
-        const fixedBack = await this.storeImagesAsMedia(card.back, cardPath);
+        const fixedBack = await this.storeImagesAsMedia(card.content, cardPath);
         const html = this.md.render(fixedBack);
         const Back = await sanitizeLatex(html);
-        const Front = await sanitizeLatex(this.md.render(card.front));
+        const Front = await sanitizeLatex(this.md.render(card.name));
         const addNote: AddNote = {
             action: "addNote",
             version: 6,
@@ -124,7 +126,18 @@ export class AnkiDeckService implements DeckService {
             }
         };
 
-        await axios.post(this.ankiHost, addNote);
+        const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, addNote);
+        const entity = new FlashCardEntity();
+        if (resp.data.result) {
+            entity.ankiCardId = resp.data.result;
+            entity.pathFromRootDir = cardPath.path;
+            entity.deck = card.deck;
+        }
+        return resp.data.result;
+    }
+
+    async updateCard(card: FlashCardWithDeck, cardPath: Uri): Promise<void> {
+        throw new Error("Method not implemented.");
     }
 
     private async storeMedia(filename: string, data: string): Promise<string> {
@@ -166,5 +179,4 @@ export class AnkiDeckService implements DeckService {
         }
         return back;
     }
-
 }

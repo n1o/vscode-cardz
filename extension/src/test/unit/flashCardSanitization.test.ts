@@ -21,8 +21,11 @@ $$ f(x; \alpha, \beta) = \beta^{\alpha} \frac{1}{\Gamma(\alpha)}x^{\alpha -1} e^
 
 describe("Find all latex should", () => {
     it("stuff", () => {
-        console.log(a);
-        console.log(sanitizeLatex(a));
-        assert.equal(1 ,1);
+        const sanitized = sanitizeLatex(a);
+        console.log(sanitized);
+        assert.equal(sanitized.includes("[$](k)[/$]"), true);
+        assert.equal(sanitized.includes("[$](\theta)[/$]"), true);
+        assert.equal(sanitized.includes("[$$]f(x; k, \theta) = \frac{1}{\theta^k} \frac{1}{\Gamma(k)}x^{k-1} e^{-\frac{x}{\theta}}[/$$]"), true);
+        assert.equal(sanitized.includes("([$]\alpha[/$])"), true);
     });
 });

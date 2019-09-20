@@ -1,13 +1,13 @@
 import axios from 'axios';
-import { findAllImagePaths } from '../util/mdUtils';
+import { findAllImagePaths, findAll, sanitizeLatex } from '../util/mdUtils';
 import { basename, sep } from 'path';
-import { fstat, promises } from 'fs';
+import { promises } from 'fs';
 import { Uri } from 'vscode';
+import * as MarkdownIt from 'markdown-it';
 
 export interface Deck {
     deckName: string;
 }
-
 
 export interface DeckService {
     getAllDecks(): Promise<Deck[]>;
@@ -24,7 +24,6 @@ export interface FlashCard {
     back: string;
     deck: string;
 }
-
 
 interface AnkiAction<T> {
     action: string;
@@ -43,11 +42,29 @@ interface CheckMediaAction extends AnkiAction<{ filename: string }> {
 interface StoreMediaAction extends AnkiAction<{ filename: string, data: string }> {
     action: "storeMediaFile";
 }
+
+interface AddNote extends AnkiAction<{ 
+    note: { 
+        deckName: string, 
+        modelName: "Basic", 
+        fields: { 
+            Front: string, 
+            Back: string   
+        },
+        options: {
+            allowDuplicate: true
+        },
+        tags: string[]
+    } }> {
+        action: "addNote";
+}
+
 /*
 res = req.post("http://localhost:8765", json = { 'action': 'deckNames', 'version': 6})
 */
 export class AnkiDeckService implements DeckService {
 
+    private readonly md = new MarkdownIt();
     private readonly ALL_DECS_ACTION: AllDecsAction =  { 'action': 'deckNames', 'version': 6};
     private retrieveMedia(filename: string): CheckMediaAction {
         return  { 
@@ -89,8 +106,25 @@ export class AnkiDeckService implements DeckService {
             throw new Error(`Invalid deck ${card.deck} choose one of ${[...allDecs].join(',')}`);
         }
 
-        const fixedBack = this.storeImagesAsMedia(card.back, cardPath);
-        console.log(fixedBack);
+        const fixedBack = await this.storeImagesAsMedia(card.back, cardPath);
+        const html = this.md.render(fixedBack);
+        const Back = await sanitizeLatex(html);
+        const Front = await sanitizeLatex(this.md.render(card.front));
+        const addNote: AddNote = {
+            action: "addNote",
+            version: 6,
+            params: {
+                note: {
+                    deckName: card.deck,
+                    modelName: "Basic",
+                    fields: { Front, Back },
+                    options: { allowDuplicate: true, },
+                    tags: [ "test_tag" ]
+                }
+            }
+        };
+
+        await axios.post(this.ankiHost, addNote);
     }
 
     private async storeMedia(filename: string, data: string): Promise<string> {
@@ -103,17 +137,8 @@ export class AnkiDeckService implements DeckService {
     }
 
     private async storeImagesAsMedia(back: string, cardPath: Uri): Promise<string> {
-        const backClone = Object.assign("", back);
         for (const image of findAllImagePaths(back)) {
             const base = basename(image);
-
-            const res = await axios.post<AnkiResponse<string>>(this.ankiHost, this.retrieveMedia(base));
-            const {result, error } = res.data;
-
-            if(result) {
-               console.log(`File already stored ${image}`);
-               back.replace(new RegExp(image, "g"), base);
-            }
 
             let imagePath: string;
             if (image.startsWith("..")) {
@@ -124,13 +149,22 @@ export class AnkiDeckService implements DeckService {
             } else {
                 imagePath = image;
             }
-            
-            const data = await promises.open(imagePath, "r");
-            const content = await data.readFile();
-            await this.storeMedia(base, content.toString('base64'));
-            console.log(`Newly uploaded file ${image}`);
-            back.replace(new RegExp(image, "g"), base);
+
+            const res = await axios.post<AnkiResponse<string>>(this.ankiHost, this.retrieveMedia(base));
+            const {result, error } = res.data;
+
+            if(result) {
+                console.log(`File already stored ${imagePath}`);
+                back = back.replace(new RegExp(image, "g"), base);
+            } else {
+                const data = await promises.open(imagePath, "r");
+                const content = await data.readFile();
+                await this.storeMedia(base, content.toString('base64'));
+                console.log(`Newly uploaded file ${imagePath}`);
+                back = back.replace(new RegExp(image, "g"), base);
+            }
         }
         return back;
     }
+
 }

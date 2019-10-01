@@ -37,7 +37,7 @@ export default async function webView(context: vscode.ExtensionContext, node: { 
         }
     );
 
-    const sources = await walkDirectory(path.join(context.extensionPath, "media", "web"));
+    const sources = await walkDirectory(path.join(context.extensionPath, "media", "web/build/static"));
 
     const files = sources
         .filter(s => !s.endsWith("index.html"))

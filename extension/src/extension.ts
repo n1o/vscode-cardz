@@ -9,9 +9,7 @@ import { AnkiDeckService } from './service/deckService';
 import { CardService } from './service/cardService';
 import { createConnection } from "typeorm";
 import { FlashCardEntity } from './entities/FlashCardEntity';
-
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+import "reflect-metadata";
 
 export async function activate(context: vscode.ExtensionContext) {
 	const ankiService  = new AnkiDeckService(vscode.workspace.rootPath!);

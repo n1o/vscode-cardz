@@ -14,7 +14,6 @@ Back:
 {{{content}}}`;
 export class CardService {
 
-
     public createFlashCard(content: string): FlashCard {
         const md = new MarkdownIt();
         const html = md.render(content);

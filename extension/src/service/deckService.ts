@@ -127,6 +127,7 @@ export class AnkiDeckService implements DeckService {
         };
 
         const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, addNote);
+        console.log(resp);
         const entity = new FlashCardEntity();
         if (resp.data.result) {
             entity.ankiCardId = resp.data.result;

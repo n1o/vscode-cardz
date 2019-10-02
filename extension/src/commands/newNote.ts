@@ -28,10 +28,11 @@ export default async function newNote(
 
         const quickPic = await decksQuickPick(decsService, async (deck) => {
             const flashCardPath = [flashCardsDirectoryPath, flashCardName].join(sep);
-            const flashCardUri = vscode.Uri.parse(flashCardPath);
+            const flashCardUri = vscode.Uri.file(flashCardPath);
 
-            await cardService.flushCard(card, deck, flashCardPath );
-            await decsService.createCard({ deck, ...card }, flashCardUri);
+            const id = await decsService.createCard({ deck, ...card }, flashCardUri);
+
+            await cardService.flushCard({...card, id }, deck, flashCardPath );
             vscode.commands.executeCommand('vscode.open', flashCardUri);
         });
         quickPic.show();

@@ -9,6 +9,7 @@ const NEW_CARD_MD =
 `---
 Deck: {{deck}}
 Front: {{{front}}}
+ID: {{{id}}}
 Back:
 ---
 {{{content}}}`;
@@ -39,7 +40,7 @@ export class CardService {
 
     async flushCard(card: FlashCard, deck: string, flashCardPath: string): Promise<void> {
         const f = await promises.open(flashCardPath, "w");
-        await f.write(render(NEW_CARD_MD, { deck, front: card.name, content: card.content }));
+        await f.write(render(NEW_CARD_MD, { deck, front: card.name, content: card.content, id: card.id }));
         return f.close();
 
     }
@@ -61,5 +62,6 @@ export class CardService {
 export interface FlashCard {
     name: string;
     content: string;
+    id?: string;
 }
 

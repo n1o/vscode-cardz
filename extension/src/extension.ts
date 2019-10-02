@@ -7,23 +7,11 @@ import webView from './webView';
 import newNote from './commands/newNote';
 import { AnkiDeckService } from './service/deckService';
 import { CardService } from './service/cardService';
-import { createConnection } from "typeorm";
-import { FlashCardEntity } from './entities/FlashCardEntity';
-import "reflect-metadata";
 
 export async function activate(context: vscode.ExtensionContext) {
 	const ankiService  = new AnkiDeckService(vscode.workspace.rootPath!);
 	const decksService = new CardService();
 
-	await createConnection({
-		type: "sqlite",
-		database: `${vscode.workspace.rootPath}${sep}database.sqlite`,
-		synchronize: true,
-		logging: false,
-		"entities": [
-			FlashCardEntity
-		],
-	 });
 	const studyNoteProvider = new StudyNotesTreeProvider(vscode.workspace.rootPath || "");
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
@@ -31,7 +19,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('studyNotes.info', (note: StudyNode) => webView(context, { name: note.label!, path: note.filePath }))
 	);
 
-	vscode.commands.registerCommand('studyNotes.openFile', (note: string) => vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(note)));
+	vscode.commands.registerCommand('studyNotes.openFile', (note: string) => vscode.commands.executeCommand('vscode.open', vscode.Uri.file(note)));
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('studyNotes.stats', () => { 
 			const editor = vscode.window.activeTextEditor;

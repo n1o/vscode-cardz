@@ -5,7 +5,6 @@ import { promises } from 'fs';
 import { Uri } from 'vscode';
 import * as MarkdownIt from 'markdown-it';
 import { FlashCard } from './cardService';
-import { FlashCardEntity } from '../entities/FlashCardEntity';
 
 export interface Deck {
     deckName: string;
@@ -127,12 +126,8 @@ export class AnkiDeckService implements DeckService {
         };
 
         const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, addNote);
-        console.log(resp);
-        const entity = new FlashCardEntity();
-        if (resp.data.result) {
-            entity.ankiCardId = resp.data.result;
-            entity.pathFromRootDir = cardPath.path;
-            entity.deck = card.deck;
+        if (!resp.data.result) {
+            throw new Error(resp.data.error);
         }
         return resp.data.result;
     }

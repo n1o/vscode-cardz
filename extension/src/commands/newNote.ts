@@ -6,11 +6,11 @@ import decksQuickPick from '../selection/decsPicker';
 import { CardService } from '../service/cardService';
 
 export default async function newNote(
-        context: vscode.ExtensionContext,
         decsService: DeckService,
         cardService: CardService
     ) {
     const editor = vscode.window.activeTextEditor;
+
     if (editor) {
         const selection = editor.selection;
         const text = editor.document.getText(selection);
@@ -33,6 +33,7 @@ export default async function newNote(
             const id = await decsService.createCard({ deck, ...card }, flashCardUri);
 
             await cardService.flushCard({...card, id }, deck, flashCardPath );
+            
             vscode.commands.executeCommand('vscode.open', flashCardUri);
         });
         quickPic.show();

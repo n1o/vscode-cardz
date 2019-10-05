@@ -12,9 +12,17 @@ import NotesService from './commands/updateNote';
 export async function activate(context: vscode.ExtensionContext) {
 	const ankiService  = new AnkiDeckService(vscode.workspace.rootPath!);
 	const decksService = new CardService();
-	const notesService = new NotesService(ankiService, decksService);
-
-	const studyNoteProvider = new StudyNotesTreeProvider(vscode.workspace.rootPath || "");
+	const notesService = new NotesService(context, ankiService, decksService);
+	const studyNotesExclusion = [
+		/\.vscode$/g,
+		/\.idea$/g,
+		/\.DS_Store$/g,
+		/\.metals$/g,
+		/\.assets$/g,
+		/^(.+)\.flashCards$/g,
+		/^resources$/g
+	];
+	const studyNoteProvider = new StudyNotesTreeProvider(vscode.workspace.rootPath! , studyNotesExclusion);
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
 	context.subscriptions.push(
@@ -32,20 +40,21 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	);
 	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(ankiService, decksService))
+		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, ankiService, decksService))
 	);
-	vscode.workspace.onWillSaveTextDocument(e => {
+	vscode.workspace.onDidSaveTextDocument(doc => {
 
-		const fileName = e.document.fileName;
+		const fileName = doc.fileName;
 		if(isFlashCard(fileName)){
 			const text = getActiveWindowText();
-			console.log(text);
 			if(text){
-				notesService.updateNote(text);
+				vscode.window.showInformationMessage("Updating Card");
+				const id = context.workspaceState.get<string>(fileName);
+				notesService.updateNote(id!, text, vscode.Uri.file(fileName));
+				vscode.window.showInformationMessage("Card Updated");
 			}
 		}
     });
-
 }
 
 function getActiveWindowText(): string | undefined {

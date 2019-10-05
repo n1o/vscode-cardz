@@ -18,7 +18,7 @@
     "typescript": "3.6.3"
   },
   "scripts": {
-    "build:style":"tailwind build src/styles/index.css -o src/styles/tailwind.css",
+    "build:style": "tailwind build src/styles/index.css -o src/styles/tailwind.css",
     "start": "react-scripts start",
     "build": "react-scripts build; mv build ../extension/media/web",
     "test": "react-scripts test",

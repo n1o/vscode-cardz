@@ -1,22 +1,28 @@
+import * as vscode from 'vscode';
+
 import { CardService } from "../service/cardService";
 import { DeckService } from "../service/deckService";
 
 class NotesService {
     private readonly DECK_REG = /Deck: (.*)/g;
     private readonly FRONT_REG = /Front: (.*)/g;
-    private readonly ID_REG = /ID: (.*)/g;
     
     constructor(
-        public readonly decsService: DeckService,
-        public readonly cardService: CardService
+        private context: vscode.ExtensionContext,
+        private readonly decsService: DeckService,
+        private readonly cardService: CardService
     ){}
 
-    updateNote(text: string) {
+    updateNote(id: string, text: string, cardPath: vscode.Uri) {
 
         const deck = this.DECK_REG.exec(text)![1];
         const front = this.FRONT_REG.exec(text)![1];
-        const id = this.ID_REG.exec(text)![1];
         const back = text.slice(text.lastIndexOf("---") + 4);
+
+
+        const card = { deck, name: front, content: back, id };
+        this.decsService.updateCard(card, cardPath);
+
     }
 }
 

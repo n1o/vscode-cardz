@@ -25,6 +25,10 @@ export interface FlashCardWithDeck extends FlashCard {
    deck: string;
 }
 
+export interface FlashCardWithDeckAndId extends FlashCardWithDeck {
+    id: string;
+}
+
 interface AnkiAction<T> {
     action: string;
     version: 6;
@@ -43,20 +47,30 @@ interface StoreMediaAction extends AnkiAction<{ filename: string, data: string }
     action: "storeMediaFile";
 }
 
+interface Fields {
+    Front: string; 
+    Back: string; 
+}
+
 interface AddNote extends AnkiAction<{ 
     note: { 
         deckName: string, 
         modelName: "Basic", 
-        fields: { 
-            Front: string, 
-            Back: string   
-        },
+        fields: Fields,
         options: {
             allowDuplicate: true
         },
         tags: string[]
     } }> {
         action: "addNote";
+}
+interface UpdateNote extends AnkiAction<{
+    note: {
+        id: string;
+        fields: Fields
+    }
+}> {
+    action: "updateNoteFields";
 }
 
 /*
@@ -101,11 +115,40 @@ export class AnkiDeckService implements DeckService {
         return data.result.map(deckName => { return { deckName }; });
     }
 
-    async createCard(card: FlashCardWithDeck, cardPath: Uri): Promise<string> {
+    async validateDeck(card: FlashCardWithDeck): Promise<void> { 
         const allDecs = new Set([...(await this.getAllDecks()).map(d => d.deckName )]);
         if (!allDecs.has(card.deck)) {
             throw new Error(`Invalid deck ${card.deck} choose one of ${[...allDecs].join(',')}`);
         }
+    }
+
+    async updateCard(card: FlashCardWithDeckAndId, cardPath: Uri): Promise<void> {
+        await this.validateDeck(card);
+        const { content, name, id } = card;
+
+        const fixedBack = await this.storeImagesAsMedia(content, cardPath);
+        const html = this.md.render(fixedBack);
+        const Back = await sanitizeLatex(html);
+        const Front = await sanitizeLatex(this.md.render(name));
+        const updateNote: UpdateNote = {
+            action: "updateNoteFields",
+            version: 6,
+            params: {
+                note: {
+                    id,
+                    fields: { Front, Back }
+                }
+            }
+        };
+
+        const resp = await axios.post<AnkiResponse<UpdateNote>>(this.ankiHost, updateNote);
+        if (!resp.data.result) {
+            throw new Error(resp.data.error);
+        }
+    }
+
+    async createCard(card: FlashCardWithDeck, cardPath: Uri): Promise<string> {
+        await this.validateDeck(card);
 
         const fixedBack = await this.storeImagesAsMedia(card.content, cardPath);
         const html = this.md.render(fixedBack);
@@ -130,10 +173,6 @@ export class AnkiDeckService implements DeckService {
             throw new Error(resp.data.error);
         }
         return resp.data.result;
-    }
-
-    async updateCard(card: FlashCardWithDeck, cardPath: Uri): Promise<void> {
-        throw new Error("Method not implemented.");
     }
 
     private async storeMedia(filename: string, data: string): Promise<string> {

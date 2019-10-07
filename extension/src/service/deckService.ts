@@ -123,7 +123,6 @@ export class AnkiDeckService implements DeckService {
     }
 
     async updateCard(card: FlashCardWithDeckAndId, cardPath: Uri): Promise<void> {
-        await this.validateDeck(card);
         const { content, name, id } = card;
 
         const fixedBack = await this.storeImagesAsMedia(content, cardPath);
@@ -148,8 +147,6 @@ export class AnkiDeckService implements DeckService {
     }
 
     async createCard(card: FlashCardWithDeck, cardPath: Uri): Promise<string> {
-        await this.validateDeck(card);
-
         const fixedBack = await this.storeImagesAsMedia(card.content, cardPath);
         const html = this.md.render(fixedBack);
         const Back = await sanitizeLatex(html);

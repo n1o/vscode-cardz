@@ -63,14 +63,12 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
-		"postinstall": "install-app-deps; node ./node_modules/vscode/bin/install",
 		"test": "npm run compile && node ./node_modules/vscode/bin/test",
 		"test:unit": "mocha -r ts-node/register src/test/unit/**/*.test.ts  --exit"
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
-		"electron-builder": "^21.2.0",
 		"mocha": "^6.2.0",
 		"ts-node": "^8.3.0",
 		"tslint": "^5.12.1",
@@ -88,9 +86,6 @@
 		"cheerio": "^1.0.0-rc.3",
 		"gray-matter": "^4.0.2",
 		"markdown-it": "^10.0.0",
-		"mustache": "^3.1.0",
-		"reflect-metadata": "^0.1.13",
-		"sqlite3": "^4.1.0",
-		"typeorm": "^0.2.19"
+		"mustache": "^3.1.0"
 	}
 }

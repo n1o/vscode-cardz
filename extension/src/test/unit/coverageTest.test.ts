@@ -1,5 +1,6 @@
 import * as assert from 'assert';
-import { coverage } from '../../commands/flashCardCoverage';
+import { coverage, LCS, tokenize } from '../../commands/flashCardCoverage';
+import { CodeLens } from 'vscode';
 const main = `# Heaps
 A heap is a binary tree, that satisfies the following properties:
 1. Heap order property
@@ -87,9 +88,20 @@ To maintain the complete binary tree property, every new node should be placed a
 After insertion the heap-order property may be violated hence we may need to swtich it with its parrent. We repeat this recursively until the heap order property is restored. 
 `;
 
-describe("Converage test", () => {
-    it("should", () => {
-        const res = coverage(main, new Map([['card1', card1], ['card2', card2], ['card3', card3]]));
-        console.log(res);
+describe("Converage", () => {
+
+    it("LCS", () => {
+        const mainTokens = tokenize(main);
+        const cardTokens = tokenize(card1);
+
+        const lcs = LCS(mainTokens, cardTokens);
+    });
+    it("coverage", () => {
+        const res = coverage(main, new Map([['card1', card1]]));
+        const card1Coverage = res.get('card1')!;
+        const head = card1Coverage[0].position;
+        const tail = card1Coverage[card1Coverage.length - 1].position;
+        assert.equal(head, 484);
+        assert.equal(tail, 508);
     });
 });

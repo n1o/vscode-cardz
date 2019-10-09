@@ -1,6 +1,4 @@
-import { ExtensionContext, window } from "vscode";
-
-const splitOn = /[ ,\n\.]/;
+const splitOn = /[ \n]/;
 type Solution = { position: number, value: Token };
 type Token = { startPosition: number, token: string };
 
@@ -54,22 +52,7 @@ export function tokenize(s: string): Token[] {
             return [{ startPosition: 0, token }];
         } else {
             const tail = acc[acc.length - 1];
-            return [...acc, { startPosition: tail.startPosition + token.length - 1, token }];
+            return [...acc, { startPosition: tail.startPosition + token.length + 1, token }];
         }
     }, []).filter(t => t.token !== "");
-}
-
-
-export function cardCoverage(cardPath: string, context: ExtensionContext) {
-    window.createTextEditorDecorationType({
-        cursor: 'crosshair',
-        backgroundColor: {
-            defaults: {
-                dark: "#FF000055",
-                light: "#FF000055",
-                highContrast: "#FF000055"
-            }
-         }
-    })
-
 }

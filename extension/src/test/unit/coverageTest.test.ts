@@ -62,8 +62,7 @@ If we have all the elements of the heap beforehand we can construct the heap in 
 const card1 = `# Bottom-Up heap construction
 If we have all the elements of the heap beforehand we can construct the heap in $O(n)$.
 
-![Bottom up](Heaps.assets/bottom_up.png)
-`;
+![Bottom up](Heaps.assets/bottom_up.png)`;
 
 const card2 = `A heap is a binary tree, that satisfies the following properties:
 1. Heap order property
@@ -75,8 +74,7 @@ In a heap T, for every position p other than the root, the key stored at p is gr
 This enforces the fact that the smallest key is always at the root. And as we traverse from the root we get larger values.
 
 **Complete Binary tree property**
-A heap T is a complete binary tree if levels $0, 1, 2, /cdots,  h - 1$ of T have the maximum number of nodes possible and the remaining nodes at level h reside in the leftmost possition to that level
-`;
+A heap T is a complete binary tree if levels $0, 1, 2, /cdots,  h - 1$ of T have the maximum number of nodes possible and the remaining nodes at level h reside in the leftmost possition to that level`;
 
 const card3 = `
 Since we alway know the height of the heap form the number of elements, we can perfrom update operations on a heap in time proportional to its height. Thus these operations will run in logarithmic time 
@@ -99,9 +97,10 @@ describe("Converage", () => {
     it("coverage", () => {
         const res = coverage(main, new Map([['card1', card1]]));
         const card1Coverage = res.get('card1')!;
-        const head = card1Coverage[0].position;
-        const tail = card1Coverage[card1Coverage.length - 1].position;
-        assert.equal(head, 484);
-        assert.equal(tail, 508);
+        const head = card1Coverage[0];
+        const tail = card1Coverage[card1Coverage.length - 1];
+        assert.equal(main.slice(head.value.startPosition, tail.value.startPosition +1), card1);
+        assert.equal(head.position, 470);
+        assert.equal(tail.position, 492);
     });
 });

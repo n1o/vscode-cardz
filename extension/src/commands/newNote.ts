@@ -4,6 +4,7 @@ import { promises } from 'fs';
 import { DeckService } from '../service/deckService';
 import decksQuickPick from '../selection/decsPicker';
 import { CardService } from '../service/cardService';
+import { flashCardsDirectory } from '../util/walk';
 
 export default async function newNote(
         context: vscode.ExtensionContext,
@@ -20,9 +21,8 @@ export default async function newNote(
         const flashCardName = CardService.cardName(card);
 
         const file = editor.document.uri;
-        const splited = file.path.split(sep);
-        const fileName = splited.pop();
-        const flashCardsDirectoryPath = [...splited, `.${fileName}.flashCards`].join(sep); 
+
+        const flashCardsDirectoryPath = flashCardsDirectory(file.path); 
         try {
             await promises.mkdir(flashCardsDirectoryPath);
         } catch (err) {}

@@ -12,7 +12,8 @@
 	"activationEvents": [
 		"onView:studyNotes",
 		"onCommand:studyNotes.info",
-		"onCommand:studyNotes.newCard"
+		"onCommand:studyNotes.newCard",
+		"onCommand:studyNotes.cardCoverage"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -37,16 +38,21 @@
 			{
 				"command": "studyNotes.info",
 				"title": "Info",
-				"category": "Study Notes Info"
+				"category": "Study Notes"
 			},
 			{
 				"command": "studyNotes.stats",
 				"title": "Card stats",
-				"category": "Study Note stats"
+				"category": "Study Note"
 			},
 			{
 				"command": "studyNotes.newCard",
 				"title": "New Card",
+				"category": "Cards"
+			},
+			{
+				"command": "studyNotes.cardCoverage",
+				"title": "Card Coverage",
 				"category": "Cards"
 			}
 		],
@@ -57,7 +63,18 @@
 					"when": "view == studyNotes && viewItem == studyNote"
 				}
 			]
-		}
+		},
+		"colors": [
+			{
+				"id": "studyNotes.cardCoverage",
+				"description": "Background decoration color for flash cards",
+				"defaults": {
+					"dark": "#FF000055",
+					"light": "#FF000055",
+					"highContrast": "#FF000055"
+				}
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

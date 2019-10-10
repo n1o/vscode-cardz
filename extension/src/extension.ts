@@ -8,6 +8,7 @@ import newNote from './commands/newNote';
 import { AnkiDeckService } from './service/deckService';
 import { CardService } from './service/cardService';
 import NotesService from './commands/updateNote';
+import { coverageAction } from './commands/coverage';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const ankiService  = new AnkiDeckService(vscode.workspace.rootPath!);
@@ -42,6 +43,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, ankiService, decksService))
 	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context))
+	);
+
 	vscode.workspace.onDidSaveTextDocument(doc => {
 
 		const fileName = doc.fileName;

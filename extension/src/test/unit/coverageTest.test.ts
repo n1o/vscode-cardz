@@ -1,6 +1,5 @@
 import * as assert from 'assert';
-import { coverage, LCS, tokenize } from '../../commands/flashCardCoverage';
-import { CodeLens } from 'vscode';
+import { coverage, tokenize, LCS } from '../../util/flashCardCoverage';
 const main = `# Heaps
 A heap is a binary tree, that satisfies the following properties:
 1. Heap order property
@@ -86,6 +85,11 @@ To maintain the complete binary tree property, every new node should be placed a
 After insertion the heap-order property may be violated hence we may need to swtich it with its parrent. We repeat this recursively until the heap order property is restored. 
 `;
 
+const card4 = `
+If we have all the elements of the heap beforehand we can construct the heap in $O(n)$.
+
+![Bottom up](../Heaps.assets/bottom_up.png)`;
+
 describe("Converage", () => {
 
     it("LCS", () => {
@@ -94,13 +98,19 @@ describe("Converage", () => {
 
         const lcs = LCS(mainTokens, cardTokens);
     });
+    // it("coverage", () => {
+    //     const res = coverage(main, new Map([['card1', card1]]));
+    //     const card1Coverage = res.get('card1')!;
+    //     const head = card1Coverage[0];
+    //     const tail = card1Coverage[card1Coverage.length - 1];
+    //     assert.equal(main.slice(head.value.startPosition, tail.value.startPosition +1), card1);
+    //     assert.equal(head.position, 470);
+    //     assert.equal(tail.position, 492);
+    // });
+    
     it("coverage", () => {
-        const res = coverage(main, new Map([['card1', card1]]));
-        const card1Coverage = res.get('card1')!;
-        const head = card1Coverage[0];
-        const tail = card1Coverage[card1Coverage.length - 1];
-        assert.equal(main.slice(head.value.startPosition, tail.value.startPosition +1), card1);
-        assert.equal(head.position, 470);
-        assert.equal(tail.position, 492);
+        const res = coverage(main, new Map([['card4', card4]]));
+        const card1Coverage = res.get('card4')!;
+        console.log(card1Coverage);
     });
 });

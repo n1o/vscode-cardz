@@ -23,16 +23,20 @@ export function solveLCS(X: Token[], Y: Token[], L: number[][]): Solution[] {
     const solution: Solution[] = [];
     let j = X.length;
     let k = Y.length;
-    while (L[j][k] > 0) {
-        if (X[j-1].token === Y[k-1].token) {
-            solution.push({ position: j - 1, value: X[j - 1] });
-            j -= 1;
-            k -= 1;
-        } else if (L[j-1][k] >= L[j][k-1]) {
-            j -= 1;
-        } else {
-            k -= 1;
+    try {
+        while (L[j][k] > 0 && j - 1 > 0 && k - 1 > 0) {
+            if (X[j-1].token === Y[k-1].token) {
+                solution.push({ position: j - 1, value: X[j - 1] });
+                j -= 1;
+                k -= 1;
+            } else if (L[j-1][k] >= L[j][k-1]) {
+                j -= 1;
+            } else {
+                k -= 1;
+            }
         }
+    } catch {
+        console.log("Error");
     }
     return solution.reverse();
 }
@@ -41,7 +45,8 @@ export function coverage(main: string, cards: Map<string, string>): Map<string, 
     const mainTokens = tokenize(main);
     return new Map([...cards.entries()].map(([k,v]) => {  
         const cardTokens = tokenize(v);
-        const lcs = solveLCS(mainTokens, cardTokens, LCS(mainTokens, cardTokens)); 
+        const grid = LCS(mainTokens, cardTokens);
+        const lcs = solveLCS(mainTokens, cardTokens, grid); 
         return [k, lcs];
     }));
 }

@@ -93,24 +93,26 @@ If we have all the elements of the heap beforehand we can construct the heap in 
 describe("Converage", () => {
 
     it("LCS", () => {
-        const mainTokens = tokenize(main);
+        // const mainTokens = tokenize(main);
         const cardTokens = tokenize(card1);
 
-        const lcs = LCS(mainTokens, cardTokens);
+        // const lcs = LCS(mainTokens, cardTokens);
     });
-    // it("coverage", () => {
-    //     const res = coverage(main, new Map([['card1', card1]]));
-    //     const card1Coverage = res.get('card1')!;
-    //     const head = card1Coverage[0];
-    //     const tail = card1Coverage[card1Coverage.length - 1];
-    //     assert.equal(main.slice(head.value.startPosition, tail.value.startPosition +1), card1);
-    //     assert.equal(head.position, 470);
-    //     assert.equal(tail.position, 492);
-    // });
+    it("coverage card1", () => {
+        const res = coverage(main, new Map([['card1', card1]]));
+        const card1Coverage = res.get('card1')!;
+        const { startPosition } = card1Coverage[0];
+        const { endPosition } = card1Coverage[card1Coverage.length - 1];
+        console.log(main.slice(startPosition, endPosition));
+   
+    });
     
-    it("coverage", () => {
-        const res = coverage(main, new Map([['card4', card4]]));
-        const card1Coverage = res.get('card4')!;
-        console.log(card1Coverage);
+    it("coverage card4", () => {
+        const res = coverage(main, new Map([['card2', card2]]));
+        const cardCoverage = res.get('card2')!;
+        const { startPosition } = cardCoverage[0];
+        const { endPosition } = cardCoverage[cardCoverage.length - 1];
+        console.log(main.slice(startPosition, endPosition));
+        console.log(cardCoverage.slice(cardCoverage.length -10, cardCoverage.length));
     });
 });

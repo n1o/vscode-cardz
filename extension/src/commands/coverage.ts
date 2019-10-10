@@ -47,13 +47,13 @@ export async function coverageAction(context: ExtensionContext) {
         if (solutions.length === 0) {
             continue;
         }
-        const head = solutions[0];
-        const tail = solutions[solutions.length - 1];
+        const { startPosition } = solutions[0];
+        const { endPosition } = solutions[solutions.length - 1];
         
         const decoration: DecorationOptions = { 
             range: new Range(
-                document.positionAt(head.position), 
-                document.positionAt(tail.position)
+                document.positionAt(startPosition), 
+                document.positionAt(endPosition)
                 ),
             hoverMessage: cardFront
             };

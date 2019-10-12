@@ -24,5 +24,6 @@ class CardsStore {
         }
     }
 }
+export { CardsStore };
 
 export default createContext(new CardsStore());

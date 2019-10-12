@@ -9,7 +9,7 @@ const htmlTemplate = `<!DOCTYPE html><html lang=en>
 <head>
     <meta charset=utf-8>
     <meta name=viewport content="width=device-width,initial-scale=1">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'unsafe-inline' vscode-resource:  https:; style-src vscode-resource: https:;"/>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'unsafe-inline' 'unsafe-eval' vscode-resource:  https:; style-src vscode-resource: https:;"/>
     {{#css}}
     <link rel="stylesheet" type="text/css" href="{{src}}">
     {{/css}}

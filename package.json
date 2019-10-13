@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://gitlab.com/n1o/vscode-cardz/issues"
   },
-  "homepage": "https://gitlab.com/n1o/vscode-cardz#readme"
+  "homepage": "https://gitlab.com/n1o/vscode-cardz#readme",
+  "dependencies": {
+    "vsce": "^1.67.1"
+  }
 }

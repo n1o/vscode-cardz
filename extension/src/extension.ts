@@ -9,11 +9,38 @@ import { AnkiDeckService } from './service/deckService';
 import { CardService } from './service/cardService';
 import NotesService from './commands/updateNote';
 import { coverageAction } from './commands/coverage';
+import { createConnection } from 'typeorm';
+import { promises } from 'fs';
+import { StudyNoteEntity } from './entity/StudyNote';
+import { ReviewService } from './service/reviewService';
+import getActiveDocument from './util/activeDocument';
+import { startReview } from './commands/review';
 
 export async function activate(context: vscode.ExtensionContext) {
+	const globalStoragePath = context.globalStoragePath;
+
+	try {
+		if(!(await promises.stat(globalStoragePath)).isDirectory()) {
+			throw new Error("Cannot create local storage");
+		}
+	} catch (err) {
+		if (err.code === 'ENOENT') {
+			(await promises.mkdir(globalStoragePath));
+		}
+	}
+	await createConnection({
+		type: "sqljs",
+		synchronize: true,
+		autoSave: true,
+		location: [globalStoragePath, 'cardz.sqllite'].join(sep),
+		entities: [StudyNoteEntity]
+	});
+
 	const ankiService  = new AnkiDeckService(vscode.workspace.rootPath!);
 	const decksService = new CardService();
 	const notesService = new NotesService(context, ankiService, decksService);
+	const reviewService = new ReviewService();
+
 	const studyNotesExclusion = [
 		/\.vscode$/g,
 		/\.idea$/g,
@@ -23,11 +50,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		/^(.+)\.flashCards$/g,
 		/^resources$/g
 	];
-	const studyNoteProvider = new StudyNotesTreeProvider(vscode.workspace.rootPath! , studyNotesExclusion);
+
+	const rootPath = vscode.workspace.workspaceFolders![0].uri.path;
+	const studyNoteProvider = new StudyNotesTreeProvider(rootPath , studyNotesExclusion);
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.info', (note: StudyNode) => webView(context, { name: note.label!, path: note.filePath }))
+		vscode.commands.registerCommand('studyNotes.info', (note: StudyNode) => webView(context, { name: note.label!, path: relativePath(note.filePath, rootPath ) }))
 	);
 
 	vscode.commands.registerCommand('studyNotes.openFile', (note: string) => vscode.commands.executeCommand('vscode.open', vscode.Uri.file(note)));
@@ -36,15 +65,14 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('studyNotes.stats', () => { 
 			const editor = vscode.window.activeTextEditor;
 			if(editor) {
-				webView(context, { name: editor.document.fileName.split(sep).pop()!, path: editor.document.fileName });
+				webView(context, { name: editor.document.fileName.split(sep).pop()!, path: relativePath(editor.document.fileName, rootPath) });
 			}
 		})
 	);
 	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, ankiService, decksService))
-	);
-	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context))
+		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, ankiService, decksService)),
+		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context)),
+		vscode.commands.registerCommand('studyNote.review', () => startReview(context, reviewService))
 	);
 
 	vscode.workspace.onDidSaveTextDocument(doc => {
@@ -77,3 +105,7 @@ function isFlashCard(fileName: string): boolean {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+function relativePath(path: string, roothPath: string): string {
+	return path.replace(roothPath, "");
+}

@@ -1,6 +1,7 @@
 {
 	"name": "vscode-cardz",
 	"displayName": "vscode-cardz",
+	"publisher": "n1o",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
@@ -13,7 +14,8 @@
 		"onView:studyNotes",
 		"onCommand:studyNotes.info",
 		"onCommand:studyNotes.newCard",
-		"onCommand:studyNotes.cardCoverage"
+		"onCommand:studyNotes.cardCoverage",
+		"onCommand:studyNote.review"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -54,6 +56,11 @@
 				"command": "studyNotes.cardCoverage",
 				"title": "Card Coverage",
 				"category": "Cards"
+			},
+			{
+				"command": "studyNote.review",
+				"title": "Note review",
+				"category": "Notes"
 			}
 		],
 		"menus": {
@@ -103,6 +110,8 @@
 		"cheerio": "^1.0.0-rc.3",
 		"gray-matter": "^4.0.2",
 		"markdown-it": "^10.0.0",
-		"mustache": "^3.1.0"
+		"mustache": "^3.1.0",
+		"sql.js": "^1.0.0",
+		"typeorm": "^0.2.19"
 	}
 }

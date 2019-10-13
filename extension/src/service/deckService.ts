@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { findAllImagePaths, findAll, sanitizeLatex } from '../util/mdUtils';
+import { findAllImagePaths, sanitizeLatex } from '../util/mdUtils';
 import { basename, sep } from 'path';
 import { promises } from 'fs';
 import { Uri } from 'vscode';

@@ -60,7 +60,6 @@ export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode
 	private validPath(localPath: string): boolean {
 		for (const e of this.configExlusions) {
 			if (localPath.match(e)) {
-				console.log(false);
 				return false;
 			}
 		}

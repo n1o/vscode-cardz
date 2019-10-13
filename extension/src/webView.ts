@@ -3,6 +3,8 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { walkDirectory } from './util/walk';
 import { render } from 'mustache';
+import { StudyNoteEntity } from './entity/StudyNote';
+import { getRepository } from 'typeorm';
 
 
 const htmlTemplate = `<!DOCTYPE html><html lang=en>
@@ -38,6 +40,13 @@ export default async function webView(context: vscode.ExtensionContext, node: { 
         }
     );
 
+    const repo = getRepository(StudyNoteEntity);
+    const studyNoteEntity = await repo.findOne(node.path);
+   
+    let lastReview = new Date(1);
+    if(studyNoteEntity) {
+        lastReview = studyNoteEntity.lastReviewed;
+    }
     const sources = await walkDirectory(path.join(context.extensionPath, "media", "web/build/static"));
 
     const files = sources
@@ -52,7 +61,7 @@ export default async function webView(context: vscode.ExtensionContext, node: { 
     panel.webview.onDidReceiveMessage(message => {
         switch(message.command) {
             case 'ready': {
-                const payload = { ...node, lastReview: new Date() };
+                const payload = { ...node, lastReview };
                 panel.webview.postMessage({ command: 'study_note', payload });
             }
         }

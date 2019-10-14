@@ -4,7 +4,7 @@ import { isFlashCard, getRelativePath } from "../util/pathUtils";
 import { getRepository } from "typeorm";
 import { FlashCardEntity } from "../entity/FlashCardEntity";
 
-export async function updateNote(context: ExtensionContext, doc: TextDocument, notesService: NotesService) {
+export async function updateNote( context: ExtensionContext, doc: TextDocument, notesService: NotesService){
     if(isFlashCard(doc.fileName)) {
         const absolutePath = doc.uri.path;
         const text = doc.getText();

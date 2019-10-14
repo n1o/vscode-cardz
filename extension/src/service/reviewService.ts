@@ -1,12 +1,16 @@
-import { getRepository } from "typeorm";
+import { getRepository, Repository } from "typeorm";
 import { StudyNoteEntity } from "../entity/StudyNoteEntity";
 
 export class ReviewService {
 
-    async reviewNow(relativePath: string) {
-        const repo = getRepository(StudyNoteEntity);
+    readonly repo: Repository<StudyNoteEntity>;
+    constructor() {
+        this.repo = getRepository(StudyNoteEntity);
+    }
 
-        let entity = await repo.findOne(relativePath);
+    async reviewNow(relativePath: string) {
+        
+        let entity = await this.repo.findOne(relativePath);
         if(entity) {
             entity.lastReviewed = new Date();
         } else {
@@ -15,6 +19,12 @@ export class ReviewService {
             entity.relativePath = relativePath;
         }
 
-        await repo.save(entity);
+        await this.repo.save(entity);
+    }
+    async lastReviewd(relativePath: string): Promise<Date | undefined> {
+        const entity = await this.repo.findOne(relativePath);
+        if (entity) {
+            return entity.lastReviewed;
+        }
     }
 }

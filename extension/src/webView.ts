@@ -3,8 +3,8 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { walkDirectory } from './util/walk';
 import { render } from 'mustache';
-import { StudyNoteEntity } from './entity/StudyNoteEntity';
-import { getRepository } from 'typeorm';
+import { ReviewService } from './service/reviewService';
+import { getRelativePath } from './util/pathUtils';
 
 
 const htmlTemplate = `<!DOCTYPE html><html lang=en>
@@ -28,7 +28,11 @@ const htmlTemplate = `<!DOCTYPE html><html lang=en>
     </body>
 </html>`;
 
-export default async function webView(context: vscode.ExtensionContext, node: { path: string, name: string }) {
+export default async function webView(
+    context: vscode.ExtensionContext, 
+    reviewService: ReviewService,
+    file: vscode.Uri
+    ) {
 
     const panel = vscode.window.createWebviewPanel(
         'studyNode',
@@ -40,13 +44,9 @@ export default async function webView(context: vscode.ExtensionContext, node: { 
         }
     );
 
-    const repo = getRepository(StudyNoteEntity);
-    const studyNoteEntity = await repo.findOne(node.path);
-   
-    let lastReview = new Date(1);
-    if(studyNoteEntity) {
-        lastReview = studyNoteEntity.lastReviewed;
-    }
+    const relativePath = getRelativePath(file.path);
+    const lastReview = await reviewService.lastReviewd(relativePath);
+    
     const sources = await walkDirectory(path.join(context.extensionPath, "media", "web/build/static"));
 
     const files = sources
@@ -61,7 +61,7 @@ export default async function webView(context: vscode.ExtensionContext, node: { 
     panel.webview.onDidReceiveMessage(message => {
         switch(message.command) {
             case 'ready': {
-                const payload = { ...node, lastReview };
+                const payload = { ...file, lastReview };
                 panel.webview.postMessage({ command: 'study_note', payload });
             }
         }

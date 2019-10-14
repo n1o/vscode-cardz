@@ -79,27 +79,8 @@ export class AnkiDeckService implements DeckService {
 
     private readonly md = new MarkdownIt();
     private readonly ALL_DECS_ACTION: AllDecsAction =  { 'action': 'deckNames', 'version': 6};
-    private retrieveMedia(filename: string): CheckMediaAction {
-        return  { 
-            action: 'retrieveMediaFile',
-            version: 6,
-            params: { filename } 
-        };
-    }
-
-    private storeMediaAction(filename: string, data: string): StoreMediaAction {
-        return {
-            action: 'storeMediaFile',
-            version: 6,
-            params: {
-                filename,
-                data
-            }
-        };
-    }
 
     constructor(
-        private readonly workDir: string,
         private readonly ankiHost: string = "http://localhost:8765",
     ) {}
 
@@ -209,5 +190,24 @@ export class AnkiDeckService implements DeckService {
             }
         }
         return back;
+    }
+
+    private retrieveMedia(filename: string): CheckMediaAction {
+        return  { 
+            action: 'retrieveMediaFile',
+            version: 6,
+            params: { filename } 
+        };
+    }
+
+    private storeMediaAction(filename: string, data: string): StoreMediaAction {
+        return {
+            action: 'storeMediaFile',
+            version: 6,
+            params: {
+                filename,
+                data
+            }
+        };
     }
 }

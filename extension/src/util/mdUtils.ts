@@ -1,5 +1,3 @@
-import { stringify } from "querystring";
-
 export function findAll(r: RegExp, s: string): RegExpExecArray[] {
     const res = r.exec(s);
     if(res) {

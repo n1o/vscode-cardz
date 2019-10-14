@@ -3,7 +3,7 @@ import { promises } from 'fs';
 import * as path from 'path';
 
 
-export class StudyNode extends vscode.TreeItem {
+export class StudyNodeTreeItem extends vscode.TreeItem {
 
 	constructor(
 		public readonly filePath: string,
@@ -31,18 +31,18 @@ export class StudyNode extends vscode.TreeItem {
 	}
 }
 
-export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode> {
+export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNodeTreeItem> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<StudyNode | undefined> = new vscode.EventEmitter<StudyNode | undefined>();
-	readonly onDidChangeTreeData: vscode.Event<StudyNode | undefined> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<StudyNodeTreeItem | undefined> = new vscode.EventEmitter<StudyNodeTreeItem | undefined>();
+	readonly onDidChangeTreeData: vscode.Event<StudyNodeTreeItem | undefined> = this._onDidChangeTreeData.event;
 
 	constructor(
 		private readonly workSpaceRoot: string,
 		private readonly configExlusions: RegExp[]
 	) { }
-	private async getStudyNote(localPath: string): Promise<StudyNode> {
+	private async getStudyNote(localPath: string): Promise<StudyNodeTreeItem> {
 		if (!(await promises.stat(localPath)).isDirectory()) {
-			return new StudyNode(
+			return new StudyNodeTreeItem(
 				localPath, 
 				vscode.TreeItemCollapsibleState.None,
 				{
@@ -52,7 +52,7 @@ export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode
 				}
 				);
 		} else {
-			return new StudyNode(localPath, vscode.TreeItemCollapsibleState.Collapsed);
+			return new StudyNodeTreeItem(localPath, vscode.TreeItemCollapsibleState.Collapsed);
 		}
 		
 	}
@@ -72,7 +72,7 @@ export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode
 		return paths.filter(p => this.validPath(p)).map(p => [localPath, p].join(path.sep));
 	}
 
-	async getChildren(element?: StudyNode): Promise<StudyNode[]> {
+	async getChildren(element?: StudyNodeTreeItem): Promise<StudyNodeTreeItem[]> {
 		const children: string[] = [];
 
 		if (element) {
@@ -85,7 +85,7 @@ export class StudyNotesTreeProvider implements vscode.TreeDataProvider<StudyNode
 		return await Promise.all(children.map(filePath => this.getStudyNote(filePath)));
 	}
 
-	getTreeItem(element: StudyNode): vscode.TreeItem | Thenable<vscode.TreeItem> {
+	getTreeItem(element: StudyNodeTreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
 		return element;
 	}
 

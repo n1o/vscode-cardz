@@ -17,10 +17,10 @@ class CardsStore {
 
     @computed
     get lastReviewedFromNow(): string {
-        if(this.currentStudyNote) {
+        if(this.currentStudyNote && this.currentStudyNote.lastReviewed) {
             return moment(this.currentStudyNote.lastReviewed,'YYYYMMDD').fromNow();
         } else {
-            return "";
+            return "Never";
         }
     }
 }

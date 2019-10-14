@@ -1,8 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { sep, dirname, basename } from 'path';
-import { StudyNotesTreeProvider, StudyNode } from './studyNodesTree';
+import { sep } from 'path';
+import { StudyNotesTreeProvider, StudyNodeTreeItem } from './studyNodesTree';
 import webView from './webView';
 import newNote from './commands/newNote';
 import { AnkiDeckService } from './service/deckService';
@@ -14,7 +14,6 @@ import { promises } from 'fs';
 import { StudyNoteEntity } from './entity/StudyNoteEntity';
 import { ReviewService } from './service/reviewService';
 import { startReview } from './commands/review';
-import { isFlashCard } from './util/pathUtils';
 import { FlashCardEntity } from './entity/FlashCardEntity';
 import { updateNote } from './commands/updateNote';
 
@@ -38,9 +37,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		entities: [StudyNoteEntity, FlashCardEntity]
 	});
 
+	const ankiHost: string | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.ankiHost");
+
 	const rootPath = vscode.workspace.workspaceFolders![0].uri.path;
 
-	const ankiService  = new AnkiDeckService(rootPath);
+	const ankiService  = new AnkiDeckService(ankiHost);
 	const decksService = new CardService();
 	const notesService = new NotesService(ankiService, decksService);
 	const reviewService = new ReviewService();
@@ -52,20 +53,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('studyNotes.info', (note: StudyNode) => webView(context, { name: note.label!, path: relativePath(note.filePath, rootPath ) }))
-	);
-
-	vscode.commands.registerCommand('studyNotes.openFile', (note: string) => vscode.commands.executeCommand('vscode.open', vscode.Uri.file(note)));
-
-	context.subscriptions.push(
 		vscode.commands.registerCommand('studyNotes.stats', () => { 
 			const editor = vscode.window.activeTextEditor;
 			if(editor) {
-				webView(context, { name: editor.document.fileName.split(sep).pop()!, path: relativePath(editor.document.fileName, rootPath) });
+				webView(context, reviewService, editor.document.uri );
 			}
 		})
 	);
 	context.subscriptions.push(
+		vscode.commands.registerCommand('studyNotes.openFile', (note: string) => vscode.commands.executeCommand('vscode.open', vscode.Uri.file(note))),
+		vscode.commands.registerCommand('studyNotes.info', (note: StudyNodeTreeItem) => webView(context, reviewService, vscode.Uri.parse(note.filePath) )),
 		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, ankiService, decksService)),
 		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context)),
 		vscode.commands.registerCommand('studyNote.review', () => startReview(context, reviewService))
@@ -76,7 +73,3 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
-
-function relativePath(path: string, roothPath: string): string {
-	return path.replace(roothPath, "");
-}

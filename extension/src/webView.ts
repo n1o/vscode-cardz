@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { walkDirectory } from './util/walk';
 import { render } from 'mustache';
-import { StudyNoteEntity } from './entity/StudyNote';
+import { StudyNoteEntity } from './entity/StudyNoteEntity';
 import { getRepository } from 'typeorm';
 
 

@@ -19,6 +19,33 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"configuration": [
+			{
+				"title": "Study Notes configuration",
+				"properties": {
+					"conf.studyNotes.exclusionPattern": {
+						"type": "array",
+						"default": [
+							"\\.vscode$",
+							"\\.idea$",
+							"\\.DS_Store$",
+							"\\.metals$",
+							"\\.assets",
+							"^(.+)\\.flashCards$",
+							"resources$"
+						],
+						"description": "Blacklist pattern in StudyNotes side bar",
+						"scope": "window"
+					},
+					"conf.studyNotes.ankiHost": {
+						"type": "string",
+						"default": "http://localhost:8765",
+						"description": "Anki connect http url",
+						"scope": "window"
+					}
+				}
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -110,6 +137,7 @@
 		"cheerio": "^1.0.0-rc.3",
 		"gray-matter": "^4.0.2",
 		"markdown-it": "^10.0.0",
+		"moment": "^2.24.0",
 		"mustache": "^3.1.0",
 		"sql.js": "^1.0.0",
 		"typeorm": "^0.2.19"

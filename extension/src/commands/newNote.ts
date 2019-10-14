@@ -31,7 +31,7 @@ export default async function newNote(
             const flashCardPath = [flashCardsDirectoryPath, flashCardName].join(sep);
             const flashCardUri = vscode.Uri.file(flashCardPath);
 
-            const id = await decsService.createCard({ deck, ...card }, flashCardUri);
+            const id = await decsService.createCard({ deck, ...card }, flashCardUri.path);
 
             context.workspaceState.update(flashCardUri.path, id);
 

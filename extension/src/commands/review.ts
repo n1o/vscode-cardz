@@ -1,12 +1,28 @@
 import { ExtensionContext, window, StatusBarItem, StatusBarAlignment, commands, Disposable } from "vscode";
 import getActiveDocument from "../util/activeDocument";
-import getRelativePath from "../util/relativePath";
+import { getRelativePath } from "../util/pathUtils";
 import { ReviewService } from "../service/reviewService";
+import * as moment from 'moment';
 
+const CURRENTLY_REVIEWING = 'note_reviewing';
+
+function createReviewStatusBar(): [StatusBarItem, Disposable] {
+    const statusBar = window.createStatusBarItem(StatusBarAlignment.Left, 0);
+    const reviewStart = new Date();
+    
+    statusBar.text = `Reviewing ${0} minutes`;
+    statusBar.command = 'endReview';
+
+    const command = commands.registerCommand('endReview', () => statusBar.dispose());
+    setInterval(() => {
+        const duration = Math.floor(moment.duration(moment(new Date()).diff(reviewStart)).asMinutes());
+        statusBar.text = `Reviewing ${duration} minutes`;
+    }, 10000);
+
+    return [statusBar, command];
+}
 
 let statusBar: StatusBarItem;
-let counter = 1;
-let command: Disposable;
 
 export async function startReview(context: ExtensionContext, reviewService: ReviewService) {
     const document = getActiveDocument("Select note to review");
@@ -14,28 +30,19 @@ export async function startReview(context: ExtensionContext, reviewService: Revi
     const note = document!.uri;
     const relativePath = getRelativePath(note.path);
 
-    reviewService.reviewNow(relativePath);
+    const reviewing = context.workspaceState.get<string>(CURRENTLY_REVIEWING);
+
+    if (reviewing) {
+        statusBar.dispose();
+    }
 
     if (!statusBar) {
-        statusBar = window.createStatusBarItem(StatusBarAlignment.Left, 100);
-
-        statusBar.text = `Review Time: ${counter}`;
-        statusBar.command = 'endReview';
-        statusBar.show();
-        setInterval(() => {
-            counter += 1;
-            statusBar.text = `Review Time: ${counter}`;
-            statusBar.show();
-        }, 1000);
+       const [bar, command ] = createReviewStatusBar();
+       statusBar = bar;
+       context.subscriptions.push(command);
+       statusBar.show();
     }
-    if(!command) {
-        command = commands.registerCommand(
-            'endReview', () => finishReview(context, reviewService)
-        );
-        context.subscriptions.push(command);
-    }
-}
 
-async function finishReview(context: ExtensionContext, reviewService: ReviewService) {
-    statusBar.dispose();
+    reviewService.reviewNow(relativePath);
+    context.workspaceState.update(CURRENTLY_REVIEWING, relativePath);
 }

@@ -1,5 +1,5 @@
 import { getRepository } from "typeorm";
-import { StudyNoteEntity } from "../entity/StudyNote";
+import { StudyNoteEntity } from "../entity/StudyNoteEntity";
 
 export class ReviewService {
 

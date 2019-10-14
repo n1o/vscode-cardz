@@ -2,7 +2,6 @@ import axios from 'axios';
 import { findAllImagePaths, sanitizeLatex } from '../util/mdUtils';
 import { basename, sep } from 'path';
 import { promises } from 'fs';
-import { Uri } from 'vscode';
 import * as MarkdownIt from 'markdown-it';
 import { FlashCard } from './cardService';
 
@@ -12,8 +11,8 @@ export interface Deck {
 
 export interface DeckService {
     getAllDecks(): Promise<Deck[]>;
-    createCard(card: FlashCardWithDeck, cardPath: Uri): Promise<string>;
-    updateCard(card: FlashCardWithDeck, cardPath: Uri): Promise<void>;
+    createCard(card: FlashCardWithDeck, cardPath: string): Promise<string>;
+    updateCard(card: FlashCardWithDeck, cardPath: string): Promise<void>;
 }
 
 interface AnkiResponse<T> {
@@ -122,7 +121,7 @@ export class AnkiDeckService implements DeckService {
         }
     }
 
-    async updateCard(card: FlashCardWithDeckAndId, cardPath: Uri): Promise<void> {
+    async updateCard(card: FlashCardWithDeckAndId, cardPath: string): Promise<void> {
         const { content, name, id } = card;
 
         const fixedBack = await this.storeImagesAsMedia(content, cardPath);
@@ -146,7 +145,7 @@ export class AnkiDeckService implements DeckService {
         }
     }
 
-    async createCard(card: FlashCardWithDeck, cardPath: Uri): Promise<string> {
+    async createCard(card: FlashCardWithDeck, cardPath: string): Promise<string> {
         const fixedBack = await this.storeImagesAsMedia(card.content, cardPath);
         const html = this.md.render(fixedBack);
         const Back = await sanitizeLatex(html);
@@ -181,13 +180,13 @@ export class AnkiDeckService implements DeckService {
         }
     }
 
-    private async storeImagesAsMedia(back: string, cardPath: Uri): Promise<string> {
+    private async storeImagesAsMedia(back: string, cardPath: string): Promise<string> {
         for (const image of findAllImagePaths(back)) {
             const base = basename(image);
 
             let imagePath: string;
             if (image.startsWith("..")) {
-                const splited = cardPath.fsPath.split(sep);
+                const splited = cardPath.split(sep);
                 splited.pop();
                 splited.pop();
                 imagePath = [...splited, image.substr(image.indexOf(sep) + 1)].join(sep);

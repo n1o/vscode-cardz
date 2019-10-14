@@ -7,14 +7,16 @@ import webView from './webView';
 import newNote from './commands/newNote';
 import { AnkiDeckService } from './service/deckService';
 import { CardService } from './service/cardService';
-import NotesService from './commands/updateNote';
+import NotesService from './service/studyNotesService';
 import { coverageAction } from './commands/coverage';
 import { createConnection } from 'typeorm';
 import { promises } from 'fs';
-import { StudyNoteEntity } from './entity/StudyNote';
+import { StudyNoteEntity } from './entity/StudyNoteEntity';
 import { ReviewService } from './service/reviewService';
-import getActiveDocument from './util/activeDocument';
 import { startReview } from './commands/review';
+import { isFlashCard } from './util/pathUtils';
+import { FlashCardEntity } from './entity/FlashCardEntity';
+import { updateNote } from './commands/updateNote';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const globalStoragePath = context.globalStoragePath;
@@ -33,25 +35,19 @@ export async function activate(context: vscode.ExtensionContext) {
 		synchronize: true,
 		autoSave: true,
 		location: [globalStoragePath, 'cardz.sqllite'].join(sep),
-		entities: [StudyNoteEntity]
+		entities: [StudyNoteEntity, FlashCardEntity]
 	});
 
-	const ankiService  = new AnkiDeckService(vscode.workspace.rootPath!);
+	const rootPath = vscode.workspace.workspaceFolders![0].uri.path;
+
+	const ankiService  = new AnkiDeckService(rootPath);
 	const decksService = new CardService();
-	const notesService = new NotesService(context, ankiService, decksService);
+	const notesService = new NotesService(ankiService, decksService);
 	const reviewService = new ReviewService();
 
-	const studyNotesExclusion = [
-		/\.vscode$/g,
-		/\.idea$/g,
-		/\.DS_Store$/g,
-		/\.metals$/g,
-		/\.assets$/g,
-		/^(.+)\.flashCards$/g,
-		/^resources$/g
-	];
+	const exclusionPattern: string[] | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.exclusionPattern");
+	const studyNotesExclusion = exclusionPattern!.map(patter => new RegExp(patter, "g"));
 
-	const rootPath = vscode.workspace.workspaceFolders![0].uri.path;
 	const studyNoteProvider = new StudyNotesTreeProvider(rootPath , studyNotesExclusion);
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
@@ -75,32 +71,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('studyNote.review', () => startReview(context, reviewService))
 	);
 
-	vscode.workspace.onDidSaveTextDocument(doc => {
-
-		const fileName = doc.fileName;
-		if(isFlashCard(fileName)){
-			const text = getActiveWindowText();
-			if(text){
-				vscode.window.showInformationMessage("Updating Card");
-				const id = context.workspaceState.get<string>(fileName);
-				notesService.updateNote(id!, text, vscode.Uri.file(fileName));
-				vscode.window.showInformationMessage("Card Updated");
-			}
-		}
-    });
-}
-
-function getActiveWindowText(): string | undefined {
-	const editor = vscode.window.activeTextEditor;
-	if(editor) {
-		return editor.document.getText();
-	} 
-	console.error("No active text editor selected");
-}
-
-function isFlashCard(fileName: string): boolean {
-	const p = basename(dirname(fileName));
-	return p.endsWith(".flashCards");
+	vscode.workspace.onDidSaveTextDocument(doc => updateNote(context, doc, notesService));
 }
 
 // this method is called when your extension is deactivated

@@ -2,7 +2,7 @@ import { ExtensionContext, window, Range, DecorationOptions } from "vscode";
 import { promises } from 'fs';
 import { flashCardsDirectory } from "../util/walk";
 import { join } from "path";
-import NotesService from "./updateNote";
+import NotesService from "../service/studyNotesService";
 import { coverage } from "../util/flashCardCoverage";
 
 const cardDecoration = window.createTextEditorDecorationType(

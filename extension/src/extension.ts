@@ -69,7 +69,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 
 	vscode.workspace.onDidSaveTextDocument(doc => updateNote(context, doc, notesService));
+	const fsWatcher = vscode.workspace.createFileSystemWatcher("**/*.md", false, false, false);
+	fsWatcher.onDidCreate((e) => console.log('Create', e));
+	fsWatcher.onDidDelete((e) => console.log('Delete', e));
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+

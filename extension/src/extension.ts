@@ -96,11 +96,9 @@ class FsWatcher {
 				const date = new Date();
 				const head = this.buffer.pop();
 				if (head && moment(date).diff(head[0], "ms") < 10) {
-					
+					this.moveFlashCards(e.path, head[1]);
 				}
 			}
-
-			
 		});
 	}
 
@@ -112,8 +110,15 @@ class FsWatcher {
 				const newDir = flashCardsDirectory(newPath);
 				await promises.mkdir(newDir);
 				const oldCards = await walkDirectory(oldFlashCardPath);
-				
+				for (const card of oldCards) {
+					const cardName = card.split(sep).pop();
+					await promises.copyFile(card, [newDir, cardName].join(sep));
+					await promises.unlink(card);
+				}
+				await promises.rmdir(oldFlashCardPath);
 			}
+		} catch (e){
+			console.log(e);
 		}
 	}
 }

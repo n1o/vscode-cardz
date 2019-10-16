@@ -16,6 +16,8 @@ import { ReviewService } from './service/reviewService';
 import { startReview } from './commands/review';
 import { FlashCardEntity } from './entity/FlashCardEntity';
 import { updateNote } from './commands/updateNote';
+import moment = require('moment');
+import { flashCardsDirectory, walkDirectory } from './util/walk';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const globalStoragePath = context.globalStoragePath;
@@ -69,11 +71,49 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 
 	vscode.workspace.onDidSaveTextDocument(doc => updateNote(context, doc, notesService));
-	const fsWatcher = vscode.workspace.createFileSystemWatcher("**/*.md", false, false, false);
-	fsWatcher.onDidCreate((e) => console.log('Create', e));
-	fsWatcher.onDidDelete((e) => console.log('Delete', e));
+	const wather = new FsWatcher("**/*.md");
+	
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
+
+class FsWatcher {
+	readonly watcher: vscode.FileSystemWatcher;
+	buffer: [Date, string][];
+	constructor(pattern: string){
+		this.buffer = [];
+		this.watcher = vscode.workspace.createFileSystemWatcher(pattern, false, false, false);
+		this.watcher.onDidCreate(async (e) => {
+			console.log('Create', e.path);
+			this.buffer.push([new Date(), e.path]);
+		});
+		this.watcher.onDidDelete(async (e) =>  {
+			
+			console.log('Delete', e.path);
+			while(this.buffer.length > 0) {
+				const date = new Date();
+				const head = this.buffer.pop();
+				if (head && moment(date).diff(head[0], "ms") < 10) {
+					
+				}
+			}
+
+			
+		});
+	}
+
+	async moveFlashCards(oldPath: string, newPath: string) {
+		const oldFlashCardPath = flashCardsDirectory(oldPath);
+		try {
+			const isDir = (await promises.stat(oldFlashCardPath)).isDirectory();
+			if(isDir) {
+				const newDir = flashCardsDirectory(newPath);
+				await promises.mkdir(newDir);
+				const oldCards = await walkDirectory(oldFlashCardPath);
+				
+			}
+		}
+	}
+}

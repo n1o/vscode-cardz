@@ -16,8 +16,15 @@ export default async function newNote(
     if (editor) {
         const selection = editor.selection;
         const text = editor.document.getText(selection);
+        const cardName = await vscode.window.showInputBox({
+            value: cardService.cardName(text) || "Pick Card Front"
+        });
 
-        const card = cardService.createFlashCard(text);
+        if (!cardName || cardName === "Pick Card Front") {
+            throw new Error(`Invalid card name ${cardName}`);
+        }
+
+        const card = cardService.createFlashCard(text, cardName);
         const flashCardName = CardService.cardName(card);
 
         const file = editor.document.uri;

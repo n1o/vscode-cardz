@@ -21,6 +21,8 @@ import { flashCardsDirectory, walkDirectory } from './util/walk';
 import { getRelativePath } from './util/pathUtils';
 
 export async function activate(context: vscode.ExtensionContext) {
+	const rootPath = vscode.workspace.workspaceFolders![0].uri.path;
+
 	const globalStoragePath = context.globalStoragePath;
 
 	try {
@@ -36,13 +38,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		type: "sqljs",
 		synchronize: true,
 		autoSave: true,
-		location: [globalStoragePath, 'cardz.sqllite'].join(sep),
+		location: join(rootPath, '.cardz.sqllite'),
 		entities: [StudyNoteEntity, FlashCardEntity]
 	});
 
 	const ankiHost: string | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.ankiHost");
-
-	const rootPath = vscode.workspace.workspaceFolders![0].uri.path;
 
 	const ankiService  = new AnkiDeckService(ankiHost);
 	const decksService = new CardService();
@@ -99,7 +99,7 @@ class FsWatcher {
 			while(this.buffer.length > 0) {
 				const date = new Date();
 				const head = this.buffer.pop();
-				if (head && moment(date).diff(head[0], "ms") < 10) {
+				if (head && moment(date).diff(head[0], "ms") < 10 && (await this.hasFlashCards(e.path))) {
 					this.moveFlashCards(e.path, head[1]);
 				}
 			}
@@ -111,15 +111,24 @@ class FsWatcher {
 	async updateFlashCardEntity(oldPath: string, newPath: string) {
 		const oldRelativePath = getRelativePath(oldPath);
 		const newRelativePath = getRelativePath(newPath);
-		// const res = await this.flashCardRepo.update({ relativePath: oldRelativePath }, { relativePath: newRelativePath });
-		// return res;
+		const res = await this.flashCardRepo.update({ relativePath: oldRelativePath }, { relativePath: newRelativePath });
+		return res;
 	}
 
 	async updateReviewEntity(oldPath: string, newPath: string) {
 		const oldRelativePath = getRelativePath(oldPath);
 		const newRelativePath = getRelativePath(newPath);
-		// const res = await this.reviewRepo.update({ relativePath: oldRelativePath }, { relativePath: newRelativePath});
-		// return res;
+		const res = await this.reviewRepo.update({ relativePath: oldRelativePath }, { relativePath: newRelativePath});
+		return res;
+	}
+
+	async hasFlashCards(oldPath: string): Promise<boolean> {
+		const stat = await promises.stat(flashCardsDirectory(oldPath));
+		try { 
+			return stat.isDirectory();
+		} catch (e) {
+			return false;
+		}
 	}
 
 	async moveFlashCards(oldPath: string, newPath: string) {

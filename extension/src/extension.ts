@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { sep } from 'path';
+import { sep, basename, join } from 'path';
 import { StudyNotesTreeProvider, StudyNodeTreeItem } from './studyNodesTree';
 import webView from './webView';
 import newNote from './commands/newNote';
@@ -9,7 +9,7 @@ import { AnkiDeckService } from './service/deckService';
 import { CardService } from './service/cardService';
 import NotesService from './service/studyNotesService';
 import { coverageAction } from './commands/coverage';
-import { createConnection } from 'typeorm';
+import { createConnection, getRepository, Repository } from 'typeorm';
 import { promises } from 'fs';
 import { StudyNoteEntity } from './entity/StudyNoteEntity';
 import { ReviewService } from './service/reviewService';
@@ -18,6 +18,7 @@ import { FlashCardEntity } from './entity/FlashCardEntity';
 import { updateNote } from './commands/updateNote';
 import moment = require('moment');
 import { flashCardsDirectory, walkDirectory } from './util/walk';
+import { getRelativePath } from './util/pathUtils';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const globalStoragePath = context.globalStoragePath;
@@ -81,6 +82,9 @@ export function deactivate() {}
 
 class FsWatcher {
 	readonly watcher: vscode.FileSystemWatcher;
+	readonly flashCardRepo: Repository<FlashCardEntity>;
+	readonly reviewRepo: Repository<StudyNoteEntity>;
+
 	buffer: [Date, string][];
 	constructor(pattern: string){
 		this.buffer = [];
@@ -100,6 +104,22 @@ class FsWatcher {
 				}
 			}
 		});
+
+		this.flashCardRepo = getRepository(FlashCardEntity);
+	}
+
+	async updateFlashCardEntity(oldPath: string, newPath: string) {
+		const oldRelativePath = getRelativePath(oldPath);
+		const newRelativePath = getRelativePath(newPath);
+		// const res = await this.flashCardRepo.update({ relativePath: oldRelativePath }, { relativePath: newRelativePath });
+		// return res;
+	}
+
+	async updateReviewEntity(oldPath: string, newPath: string) {
+		const oldRelativePath = getRelativePath(oldPath);
+		const newRelativePath = getRelativePath(newPath);
+		// const res = await this.reviewRepo.update({ relativePath: oldRelativePath }, { relativePath: newRelativePath});
+		// return res;
 	}
 
 	async moveFlashCards(oldPath: string, newPath: string) {
@@ -107,14 +127,16 @@ class FsWatcher {
 		try {
 			const isDir = (await promises.stat(oldFlashCardPath)).isDirectory();
 			if(isDir) {
-				const newDir = flashCardsDirectory(newPath);
-				await promises.mkdir(newDir);
+				const newFlashCardsPath = flashCardsDirectory(newPath);
+				await promises.mkdir(newFlashCardsPath);
 				const oldCards = await walkDirectory(oldFlashCardPath);
-				for (const card of oldCards) {
-					const cardName = card.split(sep).pop();
-					await promises.copyFile(card, [newDir, cardName].join(sep));
-					await promises.unlink(card);
+				for (const oldCardPath of oldCards) {
+					const newCardPath = join(newFlashCardsPath, basename(oldCardPath));
+					await this.updateFlashCardEntity(oldCardPath, newCardPath);
+					await promises.copyFile(oldCardPath, newCardPath );
+					await promises.unlink(oldCardPath);
 				}
+				await this.updateReviewEntity(oldPath, newPath);
 				await promises.rmdir(oldFlashCardPath);
 			}
 		} catch (e){

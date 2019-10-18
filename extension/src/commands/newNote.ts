@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
-import { sep } from 'path';
+import { sep, join } from 'path';
 import { promises } from 'fs';
 import { DeckService } from '../service/deckService';
 import decksQuickPick from '../selection/decsPicker';
 import { CardService } from '../service/cardService';
 import { flashCardsDirectory } from '../util/walk';
+import { getRepository } from 'typeorm';
+import { FlashCardEntity } from '../entity/FlashCardEntity';
+import { getRelativePath } from '../util/pathUtils';
 
 export default async function newNote(
         context: vscode.ExtensionContext,
@@ -25,7 +28,6 @@ export default async function newNote(
         }
 
         const card = cardService.createFlashCard(text, cardName);
-        const flashCardName = CardService.cardName(card);
 
         const file = editor.document.uri;
 
@@ -35,13 +37,16 @@ export default async function newNote(
         } catch (err) {}
 
         const quickPic = await decksQuickPick(decsService, async (deck) => {
-            const flashCardPath = [flashCardsDirectoryPath, flashCardName].join(sep);
+            const repo = getRepository(FlashCardEntity);
+
+            const flashCardName = CardService.fsCardName(card);
+            const flashCardPath = join(flashCardsDirectoryPath, flashCardName);
             const flashCardUri = vscode.Uri.file(flashCardPath);
 
-            const id = await decsService.createCard({ deck, ...card }, flashCardUri.path);
-
-            context.workspaceState.update(flashCardUri.path, id);
-
+            const id = await decsService.createCard({ deck, ...card }, flashCardPath);
+            const entity = new FlashCardEntity(id, getRelativePath(flashCardPath));
+            await repo.save(entity);
+            
             await cardService.flushCard(card, deck, flashCardPath );
             
             vscode.commands.executeCommand('vscode.open', flashCardUri);

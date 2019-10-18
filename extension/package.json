@@ -118,12 +118,16 @@
 		"test:unit": "mocha -r ts-node/register src/test/unit/**/*.test.ts  --exit"
 	},
 	"devDependencies": {
+		"@types/chai": "^4.2.3",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
+		"@types/uuid": "^3.4.5",
+		"chai": "^4.2.0",
 		"mocha": "^6.2.0",
 		"ts-node": "^8.3.0",
 		"tslint": "^5.12.1",
 		"typescript": "^3.3.1",
+		"uuid": "^3.3.3",
 		"vscode": "^1.1.28",
 		"webpack": "^4.39.1",
 		"webpack-cli": "^3.3.6"

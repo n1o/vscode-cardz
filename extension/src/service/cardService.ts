@@ -37,7 +37,7 @@ export class CardService {
         return f.close();
 
     }
-    static cardName(card: FlashCard): string {
+    static fsCardName(card: FlashCard): string {
         return `${card.name.replace(/[\W_]+/g, "_")}.md`;
     }
 }

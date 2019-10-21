@@ -61,7 +61,7 @@ export default async function webView(
     panel.webview.onDidReceiveMessage(message => {
         switch(message.command) {
             case 'ready': {
-                const payload = { ...file, lastReview };
+                const payload = { name: path.basename(file.fsPath), lastReview };
                 panel.webview.postMessage({ command: 'study_note', payload });
             }
         }

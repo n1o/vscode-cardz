@@ -15,7 +15,7 @@
 		"onCommand:studyNotes.info",
 		"onCommand:studyNotes.newCard",
 		"onCommand:studyNotes.cardCoverage",
-		"onCommand:studyNote.review"
+		"onCommand:studyNotes.review"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -85,7 +85,7 @@
 				"category": "Cards"
 			},
 			{
-				"command": "studyNote.review",
+				"command": "studyNotes.review",
 				"title": "Note review",
 				"category": "Notes"
 			}
@@ -94,7 +94,7 @@
 			"view/item/context": [
 				{
 					"command": "studyNotes.info",
-					"when": "view == studyNotes && viewItem == studyNote"
+					"when": "view == studyNotes && viewItem == studyItem"
 				}
 			]
 		},

@@ -32,7 +32,8 @@
 							"\\.metals$",
 							"\\.assets",
 							"^(.+)\\.flashCards$",
-							"resources$"
+							"resources$",
+							".cardz.sqllite"
 						],
 						"description": "Blacklist pattern in StudyNotes side bar",
 						"scope": "window"

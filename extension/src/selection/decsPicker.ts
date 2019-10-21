@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 
 export default async function decksQuickPick(decsService: DeckService, f: (selectedDeck: string) => Promise<void>): Promise<vscode.QuickPick<vscode.QuickPickItem>> {
 
-
     const allDecs = await decsService.getAllDecks();
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = allDecs.map( deck =>  { return { label: deck.deckName };});

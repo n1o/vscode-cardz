@@ -38,7 +38,7 @@ describe("CardService", () => {
         expect(flashCard.name).to.be.equal(cardName);
         expect(flashCard.content).to.be.equal(simpleCard);
     });
-    
+
     it("createFlashCard replace image paths", () => {
 
         const cardName = "# Bottom-Up heap construction";
@@ -74,5 +74,6 @@ describe("CardService", () => {
        expect(stat.isFile()).to.be.true;
 
        const content = (await promises.readFile(cardPath)).toString();
+       expect(content).not.to.be.empty;
     });
 });

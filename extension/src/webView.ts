@@ -5,9 +5,11 @@ import { walkDirectory } from './util/walk';
 import { render } from 'mustache';
 import { ReviewService } from './service/reviewService';
 import { getRelativePath } from './util/pathUtils';
+import { basename, join } from 'path';
 
 
-const htmlTemplate = `<!DOCTYPE html><html lang=en>
+const htmlTemplate = 
+`<!DOCTYPE html><html lang=en>
 <head>
     <meta charset=utf-8>
     <meta name=viewport content="width=device-width,initial-scale=1">
@@ -40,12 +42,12 @@ export default async function webView(
         vscode.ViewColumn.One,
         {
             enableScripts: true,
-            localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))]
+            localResourceRoots: [vscode.Uri.file(join(context.extensionPath, 'media'))]
         }
     );
 
     const relativePath = getRelativePath(file.path);
-    const lastReview = await reviewService.lastReviewd(relativePath);
+    const lastReview = await reviewService.lastReviewed(relativePath);
     
     const sources = await walkDirectory(path.join(context.extensionPath, "media", "web/build/static"));
 
@@ -61,7 +63,7 @@ export default async function webView(
     panel.webview.onDidReceiveMessage(message => {
         switch(message.command) {
             case 'ready': {
-                const payload = { name: path.basename(file.fsPath), lastReview };
+                const payload = { name: basename(file.fsPath), lastReview };
                 panel.webview.postMessage({ command: 'study_note', payload });
             }
         }

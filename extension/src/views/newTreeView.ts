@@ -1,8 +1,12 @@
 import { TreeItem, TreeItemCollapsibleState, TreeDataProvider } from "vscode";
 import { basename, join } from "path";
 import { promises } from "fs";
+import { StudyNoteEntity } from "../entity/StudyNoteEntity";
+import { getRepository } from "typeorm";
 
 export class StudyNode extends TreeItem {
+    contextValue = 'studyNode';
+
     constructor(
         public readonly directory: string
     ) {
@@ -21,11 +25,52 @@ export class StudyNode extends TreeItem {
     static isStudyNote(arg: any): arg is StudyNode {
         return arg.directory !== undefined && arg.contextValue === 'studyNode';
     }
-
-    contextValue = 'studyNode';
 } 
 
+export class LastReviewSet extends TreeItem {
+    contextValue = 'reviewNotes';
+
+    constructor(){
+        super('Last reviewed', TreeItemCollapsibleState.Collapsed);
+    }
+
+    get tooltip(): string {
+        return 'Last reviewed';
+    }
+
+    get description(): string {
+        return "Study Node";
+    }
+
+    async children(): Promise<LastReviewItem[]> {
+        const repo = getRepository(StudyNoteEntity);
+        const items = await repo.find({});
+        return items.map(item => new LastReviewItem(item));
+    }
+
+    static isInstance(arg: any): arg is LastReviewSet {
+        return arg.contextValue === 'reviewNotes';
+    }
+}
+
+export class LastReviewItem extends TreeItem {
+    contextValue = 'reviewItem';
+
+    constructor(private readonly entity: StudyNoteEntity) {
+        super(basename(entity.relativePath));
+    }
+
+    get tooltip(): string {
+        return `Tooltip: ${this.entity.lastReviewed}`;
+    }
+    get description(): string {
+        return `Description: ${this.entity.lastReviewed}`;
+    }
+
+}
 export class StudyItem extends TreeItem {
+    contextValue = 'studyItem';
+
     constructor(
         public readonly location: string
     ) {
@@ -39,11 +84,15 @@ export class StudyItem extends TreeItem {
             title: `Open: ${basename(location)}`,
             arguments: [location]
         };
+        
     }
-    contextValue = 'studyItem';
+    static isInstance(arg: any): arg is StudyItem {
+        return arg.contextValue === 'studyItem';
+    }
+
 }
 
-type StudyElements = StudyNode | StudyItem;
+type StudyElements = StudyNode | StudyItem | LastReviewSet | LastReviewItem;
 
 export class StudyItemsProvider implements TreeDataProvider<StudyElements> {
     constructor (
@@ -55,11 +104,16 @@ export class StudyItemsProvider implements TreeDataProvider<StudyElements> {
         if(element) {
             if(StudyNode.isStudyNote(element)) {
                 return this.elements(element.directory);
-            } else {
+            } 
+            if(StudyItem.isInstance(element)) {
                 return [element];
+            } 
+            if(LastReviewSet.isInstance(element)) {
+                return element.children();
             }
+            return [];
         } else {
-            return this.elements(this.rootFolder);
+            return [new StudyNode(this.rootFolder), new LastReviewSet()];
         }
     }
 

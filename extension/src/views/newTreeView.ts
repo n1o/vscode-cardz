@@ -3,6 +3,7 @@ import { basename, join } from "path";
 import { promises } from "fs";
 import { StudyNoteEntity } from "../entity/StudyNoteEntity";
 import { getRepository } from "typeorm";
+import * as moment from 'moment';
 
 export class StudyNode extends TreeItem {
     contextValue = 'studyNode';
@@ -42,10 +43,10 @@ export class LastReviewSet extends TreeItem {
         return "Study Node";
     }
 
-    async children(): Promise<LastReviewItem[]> {
+    async children(rootPath: string): Promise<LastReviewItem[]> {
         const repo = getRepository(StudyNoteEntity);
         const items = await repo.find({});
-        return items.map(item => new LastReviewItem(item));
+        return items.map(item => new LastReviewItem(item, rootPath));
     }
 
     static isInstance(arg: any): arg is LastReviewSet {
@@ -56,15 +57,20 @@ export class LastReviewSet extends TreeItem {
 export class LastReviewItem extends TreeItem {
     contextValue = 'reviewItem';
 
-    constructor(private readonly entity: StudyNoteEntity) {
+    constructor(
+        private readonly entity: StudyNoteEntity,
+        readonly rootPath: string
+        ) {
         super(basename(entity.relativePath));
+        this.command = {
+            command: "studyNotes.openFile",
+            title: `Open: ${basename(entity.relativePath)}`,
+            arguments: [join(rootPath, entity.relativePath)],
+        };
     }
 
-    get tooltip(): string {
-        return `Tooltip: ${this.entity.lastReviewed}`;
-    }
     get description(): string {
-        return `Description: ${this.entity.lastReviewed}`;
+        return moment(this.entity.lastReviewed).format("YYYY-MM-DD");
     }
 
 }
@@ -89,7 +95,6 @@ export class StudyItem extends TreeItem {
     static isInstance(arg: any): arg is StudyItem {
         return arg.contextValue === 'studyItem';
     }
-
 }
 
 type StudyElements = StudyNode | StudyItem | LastReviewSet | LastReviewItem;
@@ -109,7 +114,7 @@ export class StudyItemsProvider implements TreeDataProvider<StudyElements> {
                 return [element];
             } 
             if(LastReviewSet.isInstance(element)) {
-                return element.children();
+                return element.children(this.rootFolder);
             }
             return [];
         } else {

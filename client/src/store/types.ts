@@ -1,4 +1,9 @@
+export interface FlashCard {
+    title: string;
+    deck: string;
+}
 export interface StudyNote {
     name: string;
-    lastReviewed: Date;
+    lastReview: Date;
+    cards: FlashCard[];
 }

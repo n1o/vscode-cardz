@@ -14,7 +14,7 @@ const StudyNotesInfo: FC = () => {
                     <div className="px-4 py-2 font-bold"> Note: <span className="font-light">{name}</span> </div>
                     <div className="px-4 py-2 font-bold"> Last reviewed <span className="font-light">{ cardsContext.lastReviewedFromNow }</span> </div>
                 </div>
-                { cards.map(card => <Card {...card } key={card.title} />) }
+                { cards && cards.map(card => <Card {...card } key={card.title} />) }
             </div>
         );
     } else {

@@ -13,8 +13,9 @@ export async function updateNote( context: ExtensionContext, doc: TextDocument, 
             const repo = getRepository(FlashCardEntity);
             const card = await repo.findOne({ where: { relativePath }});
             if(card) {
+                const { id, deck } = card;
                 window.showInformationMessage("Updating Card");
-                notesService.updateNote(card.id, text,absolutePath);
+                notesService.updateNote(id, text,absolutePath, deck);
                 window.showInformationMessage("Card Updated");
             }
         }

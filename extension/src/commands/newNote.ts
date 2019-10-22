@@ -44,7 +44,7 @@ export default async function newNote(
             const flashCardUri = vscode.Uri.file(flashCardPath);
 
             const id = await decsService.createCard({ deck, ...card }, flashCardPath);
-            const entity = new FlashCardEntity(id, getRelativePath(flashCardPath));
+            const entity = new FlashCardEntity(id, getRelativePath(flashCardPath), deck);
             await repo.save(entity);
 
             await cardService.flushCard(card, deck, flashCardPath );

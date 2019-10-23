@@ -1,5 +1,5 @@
 import { promises } from 'fs';
-import { join, sep } from 'path';
+import { join, basename, dirname } from 'path';
 
 export async function walkDirectory(rootPath: string): Promise<string[]> {
  
@@ -17,8 +17,9 @@ export async function walkDirectory(rootPath: string): Promise<string[]> {
 }
 
 export function flashCardsDirectory(file: string): string {
-    const splited = file.split(sep);
-    const fileName = splited.pop();
-    const flashCardsDirectoryPath = [...splited, `.${fileName}.flashCards`].join(sep);
+    const fileName = basename(file);
+    const dir = dirname(file);
+    const ext = `.${fileName}.flashCards`;
+    const flashCardsDirectoryPath = join(dir, ext);
     return flashCardsDirectoryPath;
 }

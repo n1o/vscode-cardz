@@ -1,11 +1,14 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { walkDirectory } from './util/walk';
+import { walkDirectory, flashCardsDirectory } from './util/walk';
 import { render } from 'mustache';
 import { ReviewService } from './service/reviewService';
 import { getRelativePath } from './util/pathUtils';
 import { basename, join } from 'path';
+import { getRepository, Repository, getCustomRepository } from 'typeorm';
+import { FlashCardRepository } from './repository/FlashCardRepository';
+import { CardService } from './service/cardService';
 
 
 const htmlTemplate = 
@@ -33,7 +36,8 @@ const htmlTemplate =
 export default async function webView(
     context: vscode.ExtensionContext, 
     reviewService: ReviewService,
-    file: vscode.Uri
+    file: vscode.Uri,
+    flashCardRepo: FlashCardRepository
     ) {
 
     const panel = vscode.window.createWebviewPanel(
@@ -48,6 +52,17 @@ export default async function webView(
 
     const relativePath = getRelativePath(file.path);
     const lastReview = await reviewService.lastReviewed(relativePath);
+
+    const cardsDirectory = flashCardsDirectory(file.path);
+    
+    const cardsPath = await walkDirectory(cardsDirectory);
+
+    const cards = (await flashCardRepo.findAll(cardsPath)).map( ({deck, relativePath}) => {
+        return {
+            deck,
+            title: basename(relativePath)
+        };
+    });
     
     const sources = await walkDirectory(path.join(context.extensionPath, "media", "web/build/static"));
 
@@ -63,7 +78,7 @@ export default async function webView(
     panel.webview.onDidReceiveMessage(message => {
         switch(message.command) {
             case 'ready': {
-                const payload = { name: basename(file.fsPath), lastReview };
+                const payload = { name: basename(file.fsPath), lastReview, cards };
                 panel.webview.postMessage({ command: 'study_note', payload });
             }
         }

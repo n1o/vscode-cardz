@@ -35,8 +35,8 @@ describe("CardService", () => {
         const cardName = "# Bottom-Up heap construction";
 
         const flashCard = service.createFlashCard(simpleCard, cardName);
-        expect(flashCard.name).to.be.equal(cardName);
-        expect(flashCard.content).to.be.equal(simpleCard);
+        expect(flashCard.front).to.be.equal(cardName);
+        expect(flashCard.back).to.be.equal(simpleCard);
     });
 
     it("createFlashCard replace image paths", () => {
@@ -44,14 +44,14 @@ describe("CardService", () => {
         const cardName = "# Bottom-Up heap construction";
 
         const flashCard = service.createFlashCard(cardWithRelativePath, cardName);
-        expect(flashCard.content).to.be.equal(simpleCard);
+        expect(flashCard.back).to.be.equal(simpleCard);
     });
 
     it("fsCardName to normalize card name", () => {
 
         const name = CardService.fsCardName({
-            name: "# Bottom-Up heap construction",
-            content: ""
+            front: "# Bottom-Up heap construction",
+            back: ""
         });
 
         expect(name).to.be.equal("_Bottom_Up_heap_construction.md");
@@ -63,8 +63,8 @@ describe("CardService", () => {
         await promises.mkdir(dir);
         const cardPath = join(dir, "_Bottom_Up_heap_construction.md");
         const card = {
-            name: "# Bottom-Up heap construction",
-            content: simpleCard
+            front: "# Bottom-Up heap construction",
+            back: simpleCard
         };
 
        await service.flushCard(card, "TestDeck", cardPath);

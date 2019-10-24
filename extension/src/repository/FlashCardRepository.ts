@@ -4,7 +4,8 @@ import { FlashCardEntity } from "../entity/FlashCardEntity";
 
 @EntityRepository(FlashCardEntity)
 export class FlashCardRepository extends Repository<FlashCardEntity> {
-    findAll(relativePaths: string[]) {
+    async findAll(relativePaths: string[]) {
+        const all = await this.find({});
         return this.find({ where: { relativePath: In(relativePaths)}});
     }
 }

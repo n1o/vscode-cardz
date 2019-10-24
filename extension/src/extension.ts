@@ -10,7 +10,7 @@ import { startReview } from './commands/review';
 import { updateNote } from './commands/updateNote';
 import FsWatcher from './service/fsWatcher';
 import initTypeOrm from './service/initOrm';
-import { StudyItemsProvider, StudyNode, StudyItem } from './views/newTreeView';
+import { StudyItemsProvider, StudyItem } from './views/newTreeView';
 import { getCustomRepository } from 'typeorm';
 import { FlashCardRepository } from './repository/FlashCardRepository';
 
@@ -41,6 +41,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('studyNotes.openFile', (note: string) => vscode.commands.executeCommand('vscode.open', vscode.Uri.file(note))),
 		vscode.commands.registerCommand('studyNotes.info', (note: StudyItem) => webView(context, reviewService, vscode.Uri.parse(note.location), flashCardRepo)),

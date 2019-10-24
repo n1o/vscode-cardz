@@ -6,9 +6,7 @@ import { render } from 'mustache';
 import { ReviewService } from './service/reviewService';
 import { getRelativePath } from './util/pathUtils';
 import { basename, join } from 'path';
-import { getRepository, Repository, getCustomRepository } from 'typeorm';
 import { FlashCardRepository } from './repository/FlashCardRepository';
-import { CardService } from './service/cardService';
 
 
 const htmlTemplate = 

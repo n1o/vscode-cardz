@@ -9,15 +9,16 @@ export class ReviewService {
     }
 
     async reviewNow(relativePath: string) {
-        
-        let entity = await this.repo.findOne(relativePath);
-        if(entity) {
-            entity.lastReviewed = new Date();
-        } else {
-            entity = new StudyNoteEntity(relativePath);
-        }
 
-        await this.repo.save(entity);
+        const lastReviewed = new Date();
+        
+        const entity = await this.repo.findOne({ relativePath });
+        if (entity) {
+            entity.lastReviewed = lastReviewed;
+            await this.repo.save(entity);
+        } else {
+           await this.repo.save({ relativePath, lastReviewed });
+        }
     }
     async lastReviewed(relativePath: string): Promise<Date | undefined> {
         const entity = await this.repo.findOne(relativePath);

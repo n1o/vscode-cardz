@@ -13,6 +13,7 @@ export interface DeckService {
     getAllDecks(): Promise<Deck[]>;
     createCard(card: FlashCardWithDeck, cardPath: string): Promise<string>;
     updateCard(card: FlashCardWithDeck, cardPath: string): Promise<void>;
+    serviceName(): string;
 }
 
 interface AnkiResponse<T> {
@@ -77,12 +78,17 @@ res = req.post("http://localhost:8765", json = { 'action': 'deckNames', 'version
 */
 export class AnkiDeckService implements DeckService {
 
+
     private readonly md = new MarkdownIt();
     private readonly ALL_DECS_ACTION: AllDecsAction =  { 'action': 'deckNames', 'version': 6};
 
     constructor(
         private readonly ankiHost: string = "http://localhost:8765",
     ) {}
+
+    serviceName() {
+        return 'Anki';
+    }
 
     async getAllDecks(): Promise<Deck[]> {
         const resp = await axios.post<AnkiResponse<Array<string>>>(this.ankiHost, this.ALL_DECS_ACTION);

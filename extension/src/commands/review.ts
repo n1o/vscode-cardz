@@ -32,7 +32,7 @@ export async function startReview(context: ExtensionContext, reviewService: Revi
 
     const reviewing = context.workspaceState.get<string>(CURRENTLY_REVIEWING);
 
-    if (reviewing) {
+    if (reviewing && statusBar) {
         statusBar.dispose();
     }
 

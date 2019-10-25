@@ -7,6 +7,7 @@ import { ReviewService } from './service/reviewService';
 import { getRelativePath } from './util/pathUtils';
 import { basename, join } from 'path';
 import { FlashCardRepository } from './repository/FlashCardRepository';
+import { CardService } from './service/cardService';
 
 
 const htmlTemplate = 
@@ -34,8 +35,7 @@ const htmlTemplate =
 export default async function webView(
     context: vscode.ExtensionContext, 
     reviewService: ReviewService,
-    file: vscode.Uri,
-    flashCardRepo: FlashCardRepository
+    file: vscode.Uri
     ) {
 
     const panel = vscode.window.createWebviewPanel(
@@ -55,11 +55,9 @@ export default async function webView(
     
     const cardsPath = await walkDirectory(cardsDirectory);
 
-    const cards = (await flashCardRepo.findAll(cardsPath)).map( ({deck, relativePath}) => {
-        return {
-            deck,
-            title: basename(relativePath)
-        };
+    const cards = cardsPath.map( async cardPath =>  { 
+        const { front, deck } = await CardService.getFrontDeck(cardPath);
+        return { front, deck };
     });
     
     const sources = await walkDirectory(path.join(context.extensionPath, "media", "web/build/static"));

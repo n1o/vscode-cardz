@@ -1,5 +1,5 @@
 export interface FlashCard {
-    title: string;
+    front: string;
     deck: string;
 }
 export interface StudyNote {

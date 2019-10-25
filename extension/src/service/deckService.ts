@@ -11,8 +11,8 @@ export interface Deck {
 
 export interface DeckService {
     getAllDecks(): Promise<Deck[]>;
-    createCard(card: FlashCardWithDeck, cardPath: string): Promise<string>;
-    updateCard(card: FlashCardWithDeck, cardPath: string): Promise<void>;
+    createCard(card: FlashCard, cardPath: string): Promise<string>;
+    updateCard(card: FlashCard, cardPath: string): Promise<void>;
     serviceName(): string;
 }
 
@@ -21,30 +21,34 @@ interface AnkiResponse<T> {
     error: string;
 }
 
-export interface FlashCardWithDeck extends FlashCard {
-   deck: string;
-}
-
-export interface FlashCardWithDeckAndId extends FlashCardWithDeck {
+export interface FlashCardWithDeckAndId extends FlashCard {
     id: string;
 }
 
-interface AnkiAction<T> {
-    action: string;
-    version: 6;
-    params?: T;
+class AnkiAction<T> {
+    public readonly version: number = 6;
+    constructor(
+        public readonly action: string,
+        public readonly params: T
+        ) { }
+    stringify(): string { return JSON.stringify(this) };
+}
+class AllDecsAction extends  AnkiAction<undefined> {
+    constructor(){
+        super("deckNames", undefined);
+    }
 }
 
-interface AllDecsAction extends  AnkiAction<undefined> {
-    action: 'deckNames';
+class CheckMediaAction extends AnkiAction<{ filename: string }> {
+    constructor(filename: string) {
+        super("retrieveMediaFile", { filename });
+    }
 }
 
-interface CheckMediaAction extends AnkiAction<{ filename: string }> {
-    action: 'retrieveMediaFile';
-}
-
-interface StoreMediaAction extends AnkiAction<{ filename: string, data: string }> {
-    action: "storeMediaFile";
+class StoreMediaAction extends AnkiAction<{ filename: string, data: string }> {
+    constructor(filename: string, data: string) {
+        super("storeMediaFile", { filename, data });
+    }
 }
 
 interface Fields {
@@ -52,7 +56,7 @@ interface Fields {
     Back: string; 
 }
 
-interface AddNote extends AnkiAction<{ 
+class AddNote extends AnkiAction<{ 
     note: { 
         deckName: string, 
         modelName: "Basic", 
@@ -60,27 +64,28 @@ interface AddNote extends AnkiAction<{
         options: {
             allowDuplicate: true
         },
-        tags: string[]
-    } }> {
-        action: "addNote";
-}
-interface UpdateNote extends AnkiAction<{
+        tags: string[] }
+    }> {
+        constructor(deckName: string,  Front: string, Back: string, tags: string[]) {
+            super("addNote", { note: { deckName, modelName: "Basic",  fields: { Front, Back },  options: { allowDuplicate: true }, tags  } });
+        }
+    }
+
+class UpdateNote extends AnkiAction<{
     note: {
         id: string;
         fields: Fields
     }
 }> {
-    action: "updateNoteFields";
+    constructor(id: string, Front: string, Back : string) {
+        super("updateNoteFields", { note: { id, fields: { Front, Back } }});
+    }
 }
 
-/*
-res = req.post("http://localhost:8765", json = { 'action': 'deckNames', 'version': 6})
-*/
 export class AnkiDeckService implements DeckService {
 
-
     private readonly md = new MarkdownIt();
-    private readonly ALL_DECS_ACTION: AllDecsAction =  { 'action': 'deckNames', 'version': 6};
+    private readonly ALL_DECS_ACTION: AllDecsAction =  new AllDecsAction();
 
     constructor(
         private readonly ankiHost: string = "http://localhost:8765",
@@ -91,7 +96,7 @@ export class AnkiDeckService implements DeckService {
     }
 
     async getAllDecks(): Promise<Deck[]> {
-        const resp = await axios.post<AnkiResponse<Array<string>>>(this.ankiHost, this.ALL_DECS_ACTION);
+        const resp = await axios.post<AnkiResponse<Array<string>>>(this.ankiHost, this.ALL_DECS_ACTION.stringify());
 
         const data = resp.data;
         if (data.error) {
@@ -101,7 +106,7 @@ export class AnkiDeckService implements DeckService {
         return data.result.map(deckName => { return { deckName }; });
     }
 
-    async validateDeck(card: FlashCardWithDeck): Promise<void> { 
+    async validateDeck(card: FlashCard): Promise<void> { 
         const allDecs = new Set([...(await this.getAllDecks()).map(d => d.deckName )]);
         if (!allDecs.has(card.deck)) {
             throw new Error(`Invalid deck ${card.deck} choose one of ${[...allDecs].join(',')}`);
@@ -115,43 +120,22 @@ export class AnkiDeckService implements DeckService {
         const html = this.md.render(fixedBack);
         const Back = await sanitizeLatex(html);
         const Front = await sanitizeLatex(this.md.render(name));
-        const updateNote: UpdateNote = {
-            action: "updateNoteFields",
-            version: 6,
-            params: {
-                note: {
-                    id,
-                    fields: { Front, Back }
-                }
-            }
-        };
+        const updateNote = new UpdateNote(id, Front, Back);
 
-        const resp = await axios.post<AnkiResponse<UpdateNote>>(this.ankiHost, updateNote);
+        const resp = await axios.post<AnkiResponse<UpdateNote>>(this.ankiHost, updateNote.stringify());
         if (!resp.data.result) {
             throw new Error(resp.data.error);
         }
     }
 
-    async createCard(card: FlashCardWithDeck, cardPath: string): Promise<string> {
+    async createCard(card: FlashCard, cardPath: string): Promise<string> {
         const fixedBack = await this.storeImagesAsMedia(card.back, cardPath);
         const html = this.md.render(fixedBack);
         const Back = await sanitizeLatex(html);
         const Front = await sanitizeLatex(this.md.render(card.front));
-        const addNote: AddNote = {
-            action: "addNote",
-            version: 6,
-            params: {
-                note: {
-                    deckName: card.deck,
-                    modelName: "Basic",
-                    fields: { Front, Back },
-                    options: { allowDuplicate: true, },
-                    tags: [ "test_tag" ]
-                }
-            }
-        };
+        const addNote = new AddNote(card.deck, Front, Back, []);
 
-        const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, addNote);
+        const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, addNote.stringify());
         if (!resp.data.result) {
             throw new Error(resp.data.error);
         }
@@ -159,7 +143,9 @@ export class AnkiDeckService implements DeckService {
     }
 
     private async storeMedia(filename: string, data: string): Promise<string> {
-        const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, this.storeMediaAction(filename, data));
+        const action = new StoreMediaAction(filename, data);
+        const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, action.stringify());
+
         if (resp.data.error || resp.data.result) {
             throw new Error(`Failed to store image: ${filename}`);
         } else {
@@ -181,7 +167,8 @@ export class AnkiDeckService implements DeckService {
                 imagePath = image;
             }
 
-            const res = await axios.post<AnkiResponse<string>>(this.ankiHost, this.retrieveMedia(base));
+            const action = new CheckMediaAction(base);
+            const res = await axios.post<AnkiResponse<string>>(this.ankiHost, action.stringify());
             const {result, error } = res.data;
 
             if(result) {
@@ -196,24 +183,5 @@ export class AnkiDeckService implements DeckService {
             }
         }
         return back;
-    }
-
-    private retrieveMedia(filename: string): CheckMediaAction {
-        return  { 
-            action: 'retrieveMediaFile',
-            version: 6,
-            params: { filename } 
-        };
-    }
-
-    private storeMediaAction(filename: string, data: string): StoreMediaAction {
-        return {
-            action: 'storeMediaFile',
-            version: 6,
-            params: {
-                filename,
-                data
-            }
-        };
     }
 }

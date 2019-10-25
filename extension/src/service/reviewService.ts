@@ -13,6 +13,7 @@ export class ReviewService {
         const lastReviewed = new Date();
         
         const entity = await this.repo.findOne({ relativePath });
+
         if (entity) {
             entity.lastReviewed = lastReviewed;
             await this.repo.save(entity);

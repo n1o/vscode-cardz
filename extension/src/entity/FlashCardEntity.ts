@@ -8,7 +8,4 @@ export class FlashCardEntity {
 
     @Column()
     relativePath: string;
-
-    @Column()
-    deck: string;
 }

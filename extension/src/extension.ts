@@ -37,15 +37,15 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('studyNotes.stats', () => { 
 			const editor = vscode.window.activeTextEditor;
 			if(editor) {
-				webView(context, reviewService, editor.document.uri, flashCardRepo);
+				webView(context, reviewService, editor.document.uri);
 			}
 		})
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('studyNotes.openFile', (note: string) => vscode.commands.executeCommand('vscode.open', vscode.Uri.file(note))),
-		vscode.commands.registerCommand('studyNotes.info', (note: StudyItem) => webView(context, reviewService, vscode.Uri.parse(note.location), flashCardRepo)),
-		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, deckService, cardService)),
+		vscode.commands.registerCommand('studyNotes.info', (note: StudyItem) => webView(context, reviewService, vscode.Uri.parse(note.location))),
+		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, deckService, cardService, flashCardRepo)),
 		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context)),
 		vscode.commands.registerCommand('studyNotes.review', () => startReview(context, reviewService))
 	);

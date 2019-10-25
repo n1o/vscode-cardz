@@ -2,8 +2,8 @@ import { ExtensionContext, window, Range, DecorationOptions } from "vscode";
 import { promises } from 'fs';
 import { flashCardsDirectory } from "../util/walk";
 import { join } from "path";
-import NotesService from "../service/studyNotesService";
 import { coverage } from "../util/flashCardCoverage";
+import { CardService } from "../service/cardService";
 
 const cardDecoration = window.createTextEditorDecorationType(
     { 
@@ -34,8 +34,8 @@ export async function coverageAction(context: ExtensionContext) {
     const frontBack = new Map(
         openFiles.map(buffer => {
             const cardContent = buffer.toString();
-            const front = NotesService.front(cardContent);
-            const back = NotesService.back(cardContent);
+            const front = CardService.front(cardContent);
+            const back = CardService.back(cardContent);
             return [front, back];
         })
     );

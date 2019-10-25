@@ -21,8 +21,7 @@ If we have all the elements of the heap beforehand we can construct the heap in 
 describe("CardService", () => {
 
     const service = new CardService();
-
-
+    const deck = "Algorithms";
 
     it("cardName should get first item in card", () => {
 
@@ -34,16 +33,17 @@ describe("CardService", () => {
 
         const cardName = "# Bottom-Up heap construction";
 
-        const flashCard = service.createFlashCard(simpleCard, cardName);
+        const flashCard = service.createFlashCard(simpleCard, cardName, deck);
         expect(flashCard.front).to.be.equal(cardName);
         expect(flashCard.back).to.be.equal(simpleCard);
+        expect(flashCard.deck).to.be.equal(deck);
     });
 
     it("createFlashCard replace image paths", () => {
 
         const cardName = "# Bottom-Up heap construction";
 
-        const flashCard = service.createFlashCard(cardWithRelativePath, cardName);
+        const flashCard = service.createFlashCard(cardWithRelativePath, cardName, deck);
         expect(flashCard.back).to.be.equal(simpleCard);
     });
 
@@ -51,7 +51,8 @@ describe("CardService", () => {
 
         const name = CardService.fsCardName({
             front: "# Bottom-Up heap construction",
-            back: ""
+            back: "",
+            deck
         });
 
         expect(name).to.be.equal("_Bottom_Up_heap_construction.md");
@@ -64,10 +65,11 @@ describe("CardService", () => {
         const cardPath = join(dir, "_Bottom_Up_heap_construction.md");
         const card = {
             front: "# Bottom-Up heap construction",
-            back: simpleCard
+            back: simpleCard,
+            deck
         };
 
-       await service.flushCard(card, "TestDeck", cardPath);
+       await service.flushCard(card, cardPath);
 
        const stat = await promises.stat(cardPath);
 

@@ -1,23 +1,149 @@
 {
-  "name": "vscode-cardz",
-  "version": "1.0.0",
-  "description": "",
-  "scripts": {
-    "build:client": "cd client; npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "cd client; npm install; cd ../extension; npm install"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@gitlab.com/n1o/vscode-cardz.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/n1o/vscode-cardz/issues"
-  },
-  "homepage": "https://gitlab.com/n1o/vscode-cardz#readme",
-  "dependencies": {
-    "vsce": "^1.67.1"
-  }
+	"name": "vscode-cardz",
+	"displayName": "vscode-cardz",
+	"publisher": "n1o",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.36.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:studyNotes",
+		"onCommand:studyNotes.info",
+		"onCommand:studyNotes.newCard",
+		"onCommand:studyNotes.cardCoverage",
+		"onCommand:studyNotes.review"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"configuration": [
+			{
+				"title": "Study Notes configuration",
+				"properties": {
+					"conf.studyNotes.exclusionPattern": {
+						"type": "array",
+						"default": [
+							"\\.vscode$",
+							"\\.idea$",
+							"\\.DS_Store$",
+							"\\.metals$",
+							"\\.assets",
+							"^(.+)\\.flashCards$",
+							"resources$",
+							".cardz.sqllite"
+						],
+						"description": "Blacklist pattern in StudyNotes side bar",
+						"scope": "window"
+					},
+					"conf.studyNotes.ankiHost": {
+						"type": "string",
+						"default": "http://localhost:8765",
+						"description": "Anki connect http url",
+						"scope": "window"
+					}
+				}
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "study-notes",
+					"title": "Study Notes",
+					"icon": "media/img/dep.svg"
+				}
+			]
+		},
+		"views": {
+			"study-notes": [
+				{
+					"id": "studyNotes",
+					"name": "Study Notes"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "studyNotes.info",
+				"title": "Info",
+				"category": "Study Notes"
+			},
+			{
+				"command": "studyNotes.newCard",
+				"title": "New Card",
+				"category": "Cards"
+			},
+			{
+				"command": "studyNotes.cardCoverage",
+				"title": "Coverage",
+				"category": "Cards"
+			},
+			{
+				"command": "studyNotes.review",
+				"title": "Review",
+				"category": "Notes"
+			}
+		],
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "studyNotes.info",
+					"when": "view == studyNotes && viewItem == studyItem"
+				},
+				{
+					"command": "studyNotes.review",
+					"when": "view == studyNotes && viewItem == studyItem"
+				}
+			]
+		},
+		"colors": [
+			{
+				"id": "studyNotes.cardCoverage",
+				"description": "Background decoration color for flash cards",
+				"defaults": {
+					"dark": "#FF000055",
+					"light": "#FF000055",
+					"highContrast": "#FF000055"
+				}
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test",
+		"test:unit": "mocha -r ts-node/register src/test/unit/**/*.test.ts  --exit"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.2.3",
+		"@types/mocha": "^2.2.42",
+		"@types/node": "^10.12.21",
+		"@types/uuid": "^3.4.5",
+		"chai": "^4.2.0",
+		"mocha": "^6.2.0",
+		"ts-node": "^8.3.0",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"uuid": "^3.3.3",
+		"vscode": "^1.1.28",
+		"webpack": "^4.39.1",
+		"webpack-cli": "^3.3.6"
+	},
+	"dependencies": {
+		"@types/axios": "^0.14.0",
+		"@types/cheerio": "^0.22.13",
+		"@types/markdown-it": "0.0.8",
+		"@types/nunjucks": "^3.1.2",
+		"axios": "^0.19.0",
+		"cheerio": "^1.0.0-rc.3",
+		"gray-matter": "^4.0.2",
+		"markdown-it": "^10.0.0",
+		"moment": "^2.24.0",
+		"nunjucks": "^3.2.0",
+		"sql.js": "^1.0.0",
+		"typeorm": "^0.2.19"
+	}
 }

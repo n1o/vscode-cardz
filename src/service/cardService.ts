@@ -26,6 +26,10 @@ export class CardService {
             if(!imagePath.startsWith(sep) && !imagePath.startsWith("..")) {
                 back = back.replace(imagePath, `../${imagePath}`);
             }
+
+            if(imagePath.startsWith(`.${sep}`)) {
+                back = back.replace(imagePath, `.${imagePath}`);
+            }
         }
     
         return { front, back, deck };

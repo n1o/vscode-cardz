@@ -23,9 +23,9 @@ describe("Find all latex should", () => {
     it("stuff", () => {
         const sanitized = sanitizeLatex(a);
         console.log(sanitized);
-        assert.equal(sanitized.includes("[$](k)[/$]"), true);
-        assert.equal(sanitized.includes("[$](\theta)[/$]"), true);
-        assert.equal(sanitized.includes("[$$]f(x; k, \theta) = \frac{1}{\theta^k} \frac{1}{\Gamma(k)}x^{k-1} e^{-\frac{x}{\theta}}[/$$]"), true);
-        assert.equal(sanitized.includes("([$]\alpha[/$])"), true);
+        assert.equal(sanitized.includes("\\((k)\\)"), true);
+        assert.equal(sanitized.includes("\\((\theta)\\)"), true);
+        assert.equal(sanitized.includes("\\[f(x; k, \theta) = \frac{1}{\theta^k} \frac{1}{\Gamma(k)}x^{k-1} e^{-\frac{x}{\theta}}\\]"), true);
+        assert.equal(sanitized.includes("(\\(\alpha\\))"), true);
     });
 });

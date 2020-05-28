@@ -11,8 +11,6 @@ import { updateNote } from './commands/updateNote';
 import FsWatcher from './service/fsWatcher';
 import initTypeOrm from './service/initOrm';
 import { StudyItemsProvider, StudyItem } from './views/newTreeView';
-import { getCustomRepository } from 'typeorm';
-import { FlashCardRepository } from './repository/FlashCardRepository';
 import { join } from 'path';
 import { CardInfoService } from './service/cardInfoService';
 
@@ -32,7 +30,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	const notesService = new NotesService(deckService);
 	const reviewService = new ReviewService();
 	const cardInfoService = new CardInfoService(tailwindCss(context));
-	const flashCardRepo = getCustomRepository(FlashCardRepository);
 
 	const exclusionPattern: string[] | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.exclusionPattern");
 	const studyNotesExclusion = exclusionPattern!.map(patter => new RegExp(patter, "g"));
@@ -54,7 +51,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				}
 			}
 		}),
-		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, deckService, cardService, flashCardRepo)),
+		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, deckService, cardService)),
 		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context)),
 		vscode.commands.registerCommand('studyNotes.review', async (item? :StudyItem) => { 
 			if(item) {

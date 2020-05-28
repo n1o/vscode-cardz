@@ -121,9 +121,8 @@ export class AnkiDeckService implements DeckService {
         const Back = await sanitizeLatex(html);
         const Front = await sanitizeLatex(this.md.render(name));
         const updateNote = new UpdateNote(id, Front, Back);
-
         const resp = await axios.post<AnkiResponse<UpdateNote>>(this.ankiHost, updateNote.stringify());
-        if (!resp.data.result) {
+        if (resp.data.error) {
             throw new Error(resp.data.error);
         }
     }

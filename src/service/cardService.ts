@@ -7,6 +7,7 @@ const NEW_CARD_MD =
 `---
 Deck: {{deck}}
 Front: {{front}}
+ID: {{id}}
 Back:
 ---
 {{back}}`;
@@ -15,30 +16,25 @@ export class CardService {
     private static readonly FRONT_REG = /Front: (.*)/g;
     private static readonly DECK_REG = /Deck: (.*)/g;
 
-    public cardName(content: string): string | undefined {
+    public static cardName(content: string): string | undefined {
         return content.split("\n").shift();
     }
 
     public createFlashCard(back: string, front: string, deck: string): FlashCard {
 
         for (const imagePath of findAllImagePaths(back)) {
-            // Check if it not an absolute path!
-            if(!imagePath.startsWith(sep) && !imagePath.startsWith("..")) {
-                back = back.replace(imagePath, `../${imagePath}`);
-            }
-
-            if(imagePath.startsWith(`.${sep}`)) {
-                back = back.replace(imagePath, `.${imagePath}`);
+            if(!imagePath.startsWith("http")) {
+                back = back.replace(imagePath, `..${sep}${imagePath}`);
             }
         }
     
-        return { front, back, deck };
+        return { front, back, deck, id: "not_set" };
     }
 
     async flushCard(card: FlashCard, flashCardPath: string): Promise<void> {
-        const { front, back, deck } = card;
+        const { front, back, deck, id } = card;
         const f = await promises.open(flashCardPath, "w");
-        await f.write(renderString(NEW_CARD_MD, { deck, front, back }));
+        await f.write(renderString(NEW_CARD_MD, { deck, front, back, id }));
         return f.close();
 
     }
@@ -69,6 +65,7 @@ export class CardService {
 }
 
 export interface FlashCard {
+    id: string;
     front: string;
     back: string;
     deck: string;

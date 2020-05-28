@@ -5,14 +5,11 @@ import { DeckService } from '../service/deckService';
 import decksQuickPick from '../selection/decsPicker';
 import { CardService } from '../service/cardService';
 import { flashCardsDirectory } from '../util/walk';
-import { getRelativePath } from '../util/pathUtils';
-import { FlashCardRepository } from '../repository/FlashCardRepository';
 
 export default async function newNote(
         context: vscode.ExtensionContext,
         decsService: DeckService,
-        cardService: CardService,
-        flashCardRepo: FlashCardRepository
+        cardService: CardService
     ) {
     const editor = vscode.window.activeTextEditor;
 
@@ -20,7 +17,7 @@ export default async function newNote(
         const selection = editor.selection;
         const text = editor.document.getText(selection);
         const cardName = await vscode.window.showInputBox({
-            value: cardService.cardName(text) || "Pick Card Front"
+            value: CardService.cardName(text) || "Pick Card Front"
         });
 
         if (!cardName || cardName === "Pick Card Front") {
@@ -36,17 +33,17 @@ export default async function newNote(
             const flashCardsDirectoryPath = flashCardsDirectory(file.path); 
             try {
                 await promises.mkdir(flashCardsDirectoryPath);
-            } catch (err) { }
+            } catch (err) {
+                vscode.window.showErrorMessage(`Error ${err}`);
+            }
 
             const flashCardName = CardService.fsCardName(card);
             const flashCardPath = join(flashCardsDirectoryPath, flashCardName);
             const flashCardUri = vscode.Uri.file(flashCardPath);
 
             const id = await decsService.createCard({ deck, ...card }, flashCardPath);
-         
-            await flashCardRepo.save({ id, relativePath: getRelativePath(flashCardPath) });
 
-            await cardService.flushCard(card, flashCardPath);
+            await cardService.flushCard({...card, id }, flashCardPath);
             
             vscode.commands.executeCommand('vscode.open', flashCardUri);
         });

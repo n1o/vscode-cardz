@@ -1,3 +1,7 @@
+import { compile } from "nunjucks";
+
+const IMAGE_REGEX = new RegExp(/!\[(.*)\]\((.+)\)/g);
+
 export function findAll(r: RegExp, s: string): RegExpExecArray[] {
     const res = r.exec(s);
     if(res) {
@@ -8,12 +12,17 @@ export function findAll(r: RegExp, s: string): RegExpExecArray[] {
 }
 
 export function findAllImagePaths(s: string): string[] {
-    const imageRegex = new RegExp(/!\[(.+)\]\((.+)\)/g);
-    return findAll(imageRegex, s).map(exp => exp[2]);
+    const result: string[] = [];
+
+    let match: RegExpExecArray| null;
+    while((match = IMAGE_REGEX.exec(s)) != null) {
+        result.push(match[2]);
+    }
+    return result;
 }
 
 export function sanitizeLatex(s: string): string {
-    const double = /(\$\$)(.*?)(\$\$)/g;
+    const double = /(\$\$)((.|\n)*?)(\$\$)/g;
     const single = /(\$)(.*?)(\$)/g;
     const doubleRegex = replaceLatex(double, s, "\\[", "\\]");
     const singleRegex = replaceLatex(single, doubleRegex, "\\(", "\\)");

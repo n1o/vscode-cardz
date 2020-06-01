@@ -19,7 +19,7 @@ function _resolveLink(documentPath: string[], relativeDocumentLink: string[]): s
     }
 
     if(linkHead === ".") {
-        return [...documentPath, ...[relativeDocumentLink.slice(1)]].join(sep);
+        return [...documentPath, ...relativeDocumentLink.slice(1)].join(sep);
     }
 
     return [...documentPath, ...relativeDocumentLink].join(sep);

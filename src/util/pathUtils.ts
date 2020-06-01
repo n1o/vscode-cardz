@@ -1,4 +1,4 @@
-import { workspace } from "vscode";
+import { workspace, TextDocument } from "vscode";
 import { basename, dirname } from "path";
 
 export function getRelativePath(path: string): string {
@@ -9,4 +9,8 @@ export function getRelativePath(path: string): string {
 export function isFlashCard(fileName: string): boolean {
 	const p = basename(dirname(fileName));
 	return p.endsWith(".flashCards");
+}
+
+export function isFlashCardV2(doc: TextDocument, flashCardDir: string): boolean {
+	return doc.uri.fsPath.startsWith(flashCardDir);
 }

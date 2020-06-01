@@ -13,7 +13,6 @@ export interface Deck {
 export interface DeckService {
     getAllDecks(): Promise<Deck[]>;
     newCard(card: CardInstance): Promise<{ id: string }>;
-    createCard(card: FlashCard, cardPath: string): Promise<string>;
     updateCard(card: FlashCard, cardPath: string): Promise<void>;
     serviceName(): string;
 }
@@ -137,20 +136,6 @@ export class AnkiDeckService implements DeckService {
         if (resp.data.error) {
             throw new Error(resp.data.error);
         }
-    }
-
-    async createCard(card: FlashCard, cardPath: string): Promise<string> {
-        const fixedBack = await this.storeImagesAsMedia(card.back, cardPath);
-        const html = this.md.render(fixedBack);
-        const Back = await sanitizeLatex(html);
-        const Front = await sanitizeLatex(this.md.render(card.front));
-        const addNote = new AddNote(card.deck, Front, Back, []);
-
-        const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, addNote.stringify());
-        if (!resp.data.result) {
-            throw new Error(resp.data.error);
-        }
-        return resp.data.result;
     }
 
     private async storeMedia(filename: string, data: string): Promise<string> {

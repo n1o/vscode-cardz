@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import webView from './views/webView';
-import newNote from './commands/newNote';
 import { AnkiDeckService } from './service/deckService';
 import { CardService } from './service/cardService';
 import NotesService from './service/studyNotesService';
@@ -17,6 +16,7 @@ import { existsSync } from 'fs';
 import { mkdirSync } from 'fs';
 import { CardsService } from './entity/CardInstance';
 import { CardsController } from './controller/notesController';
+import { isFlashCardV2 } from './util/pathUtils';
 
 function tailwindCss(context: vscode.ExtensionContext): string {
 	return 	vscode.Uri.file(join(context.extensionPath, 'media', 'css', 'tailwind.min.css')).with({ scheme: 'vscode-resource'}).toString();
@@ -38,11 +38,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const deckService  = new AnkiDeckService(ankiHost);
 	const cardsService = new CardsService(rootFolder, cardsFolder)
-	const notesService = new NotesService(deckService);
 	const reviewService = new ReviewService();
 	const cardInfoService = new CardInfoService(tailwindCss(context));
 
-	const cardsController = new CardsController(context, deckService, cardsService);
+	const cardsController = new CardsController(deckService, cardsService);
 
 	const exclusionPattern: string[] | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.exclusionPattern");
 	const studyNotesExclusion = exclusionPattern!.map(patter => new RegExp(patter, "g"));
@@ -64,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				}
 			}
 		}),
-		vscode.commands.registerCommand('studyNotes.newCard', () => cardsController.newNote)),
+		vscode.commands.registerCommand('studyNotes.newCard', () => cardsController.newNote()),
 		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context)),
 		vscode.commands.registerCommand('studyNotes.review', async (item? :StudyItem) => { 
 			if(item) {
@@ -74,7 +73,11 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	vscode.workspace.onDidSaveTextDocument(doc => updateNote(context, doc, notesService));
+	vscode.workspace.onDidSaveTextDocument(doc => {
+		if(isFlashCardV2(doc, cardsPath)) {
+			cardsController.updateNote(doc);
+		}
+	});
 	const watcher = new FsWatcher("**/*.md");
 	
 }

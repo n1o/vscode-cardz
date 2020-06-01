@@ -1,4 +1,4 @@
-import { ExtensionContext, window, commands, Uri, TextDocument } from "vscode";
+import { window, commands, Uri, TextDocument } from "vscode";
 import { DeckService } from "../service/deckService";
 import decksQuickPick from "../selection/decsPicker";
 import { CardInstance, CardsService } from "../entity/CardInstance";
@@ -6,13 +6,12 @@ import { CardInstance, CardsService } from "../entity/CardInstance";
 
 export class CardsController {
     constructor(
-        private context: ExtensionContext,
         private readonly decsService: DeckService,
         private readonly cardsService: CardsService
     ){}
 
 
-    public async updateNote( doc: TextDocument) {
+    public async updateNote(doc: TextDocument) {
 
     }
 

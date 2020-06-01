@@ -33,7 +33,8 @@ export class CardsService {
         private readonly cardsFolder: string) {
     }
 
-    flushCard(card: CardInstance): { cardPath: string } {
+    flushCard(_card: CardInstance): { cardPath: string } {
+        const card = this.fixImgePath(_card);
         const cardDirecotry = this.cardDirectory(card);
         mkdirSync(cardDirecotry, { recursive: true });
         const cardPath = [cardDirecotry, card.cardName].join(sep);
@@ -47,6 +48,34 @@ export class CardsService {
 
         return { cardPath };
     };
+
+    public fixImgePath(card: CardInstance): CardInstance {
+        const direcotry = this.cardDirectory(card);
+        if(card.images.length === 0) {
+            return card;
+        }
+
+        let back = card.back;
+
+        const newImages: CardImage[] = [];
+
+        for (const { absolutePath, src } of card.images) {
+            const parts = direcotry.split(sep);
+            for(let i = parts.length - 1; i > 0; i--) {
+                const part = parts.slice(0, i).join(sep);
+                if(part === this.rootFolder) {
+                    const partialRelative = absolutePath.replace(this.rootFolder + sep, "");
+                    const upToRoot = [...Array(i - 2)].map(_ => "..").join(sep);
+                    const newRelative = [upToRoot, partialRelative].join(sep);
+                    back = back.replace(src, newRelative);
+                    newImages.push({ src: newRelative, absolutePath });
+                }
+            }
+        }
+        card.images = newImages;
+        card.back = back;
+        return card;
+    }
 
     public cardDirectory(card: CardInstance): string {
         let i = 0;
@@ -73,10 +102,10 @@ export class CardInstance {
     private constructor(
         private _id: string,
         public readonly front: string,
-        public readonly back: string,
+        private _back: string,
         public readonly deck: string,
         public readonly tags: string[],
-        public readonly images: CardImage[],
+        private  _images: CardImage[],
         public readonly documentPath: string
         ){}
 
@@ -88,6 +117,22 @@ export class CardInstance {
     set id(id: string) {
         this._id = id;
     };
+
+    get back() {
+        return this._back;
+    }
+
+    set back(back: string) {
+        this._back = back;
+    }
+
+    get images() {
+        return this._images;
+    }
+
+    set images(images: CardImage[]) {
+        this._images = images;
+    }
 
     public static fromMarkdown(text: string, documentPath: string): CardInstance {
         const front = this.getMatch(text, FRONT_REG, "Failed to find Front:");

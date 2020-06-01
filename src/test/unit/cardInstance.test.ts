@@ -42,7 +42,6 @@ describe("Card Instance", () => {
         expect(instance.tags).toEqual(["tag1", "tag2"]);
         expect(instance.back.startsWith("# Some start") && instance.back.endsWith("Here to test image uploads.\n")).toBe(true);
         expect(instance.documentPath).toBe(documentPath);
-        console.log(instance.images);
     });
 
     it("card name", () => {

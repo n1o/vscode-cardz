@@ -15,6 +15,15 @@ export class CardService {
 
     private static readonly FRONT_REG = /Front: (.*)/g;
     private static readonly DECK_REG = /Deck: (.*)/g;
+    private static readonly ID_REGEX = /ID: (.*)\n/g;
+
+    public static cardID(text: string): string | undefined {
+        const res = this.ID_REGEX.exec(text);
+        if(res) {
+            const id = res![1];
+            return id;
+        }
+    }
 
     public static cardName(content: string): string | undefined {
         return content.split("\n").shift();
@@ -36,11 +45,11 @@ export class CardService {
         const f = await promises.open(flashCardPath, "w");
         await f.write(renderString(NEW_CARD_MD, { deck, front, back, id }));
         return f.close();
-
     }
     static fsCardName(card: FlashCard): string {
         return `${card.front.replace(/[\W_]+/g, "_")}.md`;
     }
+
 
     static front(s: string): string {
         return s.match(this.FRONT_REG)![0].replace('Front: ', '');

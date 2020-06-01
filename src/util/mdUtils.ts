@@ -1,5 +1,3 @@
-import { compile } from "nunjucks";
-
 const IMAGE_REGEX = new RegExp(/!\[(.*)\]\((.+)\)/g);
 
 export function findAll(r: RegExp, s: string): RegExpExecArray[] {

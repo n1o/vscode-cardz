@@ -4,6 +4,7 @@ import { basename, sep } from 'path';
 import { promises } from 'fs';
 import * as MarkdownIt from 'markdown-it';
 import { FlashCard } from './cardService';
+import { CardInstance } from '../entity/CardInstance';
 
 export interface Deck {
     deckName: string;
@@ -11,6 +12,7 @@ export interface Deck {
 
 export interface DeckService {
     getAllDecks(): Promise<Deck[]>;
+    newCard(card: CardInstance): Promise<{ id: string }>;
     createCard(card: FlashCard, cardPath: string): Promise<string>;
     updateCard(card: FlashCard, cardPath: string): Promise<void>;
     serviceName(): string;
@@ -90,6 +92,16 @@ export class AnkiDeckService implements DeckService {
     constructor(
         private readonly ankiHost: string = "http://localhost:8765",
     ) {}
+    async newCard(card: CardInstance): Promise<{ id: string }> {
+        const back = this.md.render(card.back);
+        const front = this.md.render(card.front);
+        const addNote = new AddNote(card.deck, front, back, []);
+        const resp = await axios.post<AnkiResponse<string>>(this.ankiHost, addNote.stringify());
+        if (!resp.data.result) {
+            throw new Error(resp.data.error);
+        }
+        return { id: resp.data.result };
+    }
 
     serviceName() {
         return 'Anki';

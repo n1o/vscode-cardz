@@ -11,30 +11,43 @@ import { updateNote } from './commands/updateNote';
 import FsWatcher from './service/fsWatcher';
 import initTypeOrm from './service/initOrm';
 import { StudyItemsProvider, StudyItem } from './views/newTreeView';
-import { join } from 'path';
+import { join, sep } from 'path';
 import { CardInfoService } from './service/cardInfoService';
+import { existsSync } from 'fs';
+import { mkdirSync } from 'fs';
+import { CardsService } from './entity/CardInstance';
+import { CardsController } from './controller/notesController';
 
 function tailwindCss(context: vscode.ExtensionContext): string {
 	return 	vscode.Uri.file(join(context.extensionPath, 'media', 'css', 'tailwind.min.css')).with({ scheme: 'vscode-resource'}).toString();
 }
 
 export async function activate(context: vscode.ExtensionContext) {
-	const rootPath = vscode.workspace.workspaceFolders![0].uri.path;
+	const rootFolder = vscode.workspace.workspaceFolders![0].uri.path;
+	const cardsFolder = ".cards";
 
-	await initTypeOrm(rootPath);
+	const cardsPath = [rootFolder, ".cards"].join(sep);
+	const exists = existsSync(cardsPath);
+	if(!exists) {
+		mkdirSync(cardsPath);
+	}
+
+	await initTypeOrm(rootFolder);
 
 	const ankiHost: string | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.ankiHost");
 
 	const deckService  = new AnkiDeckService(ankiHost);
-	const cardService = new CardService();
+	const cardsService = new CardsService(rootFolder, cardsFolder)
 	const notesService = new NotesService(deckService);
 	const reviewService = new ReviewService();
 	const cardInfoService = new CardInfoService(tailwindCss(context));
 
+	const cardsController = new CardsController(context, deckService, cardsService);
+
 	const exclusionPattern: string[] | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.exclusionPattern");
 	const studyNotesExclusion = exclusionPattern!.map(patter => new RegExp(patter, "g"));
 
-	const studyNoteProvider = new StudyItemsProvider(rootPath , studyNotesExclusion);
+	const studyNoteProvider = new StudyItemsProvider(rootFolder , studyNotesExclusion);
 	vscode.window.registerTreeDataProvider('studyNotes', studyNoteProvider);
 
 	context.subscriptions.push(
@@ -51,7 +64,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				}
 			}
 		}),
-		vscode.commands.registerCommand('studyNotes.newCard', () => newNote(context, deckService, cardService)),
+		vscode.commands.registerCommand('studyNotes.newCard', () => cardsController.newNote)),
 		vscode.commands.registerCommand('studyNotes.cardCoverage', () => coverageAction(context)),
 		vscode.commands.registerCommand('studyNotes.review', async (item? :StudyItem) => { 
 			if(item) {

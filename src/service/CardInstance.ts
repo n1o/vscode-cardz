@@ -14,13 +14,6 @@ Back:
 ---
 {{back}}`;
 
-const FRONT_REG = /Front: (.*)\n/g;
-const DECK_REG = /Deck: (.*)\n/g;
-const ID_REGEX = /ID: (.*)\n/g;
-const TAGS_REGEX = /Tags: (.*)\n/g;
-const BACK_REGEX = /Back:\n---\n((\n|.*)*)/g;
-const IMAGE_REGEX = /!\[(.*?)\]( |\t)*\((.*?)\)/g
-
 
 type CardImage = {
     src: string;
@@ -135,6 +128,13 @@ export class CardInstance {
     }
 
     public static fromMarkdown(text: string, documentPath: string): CardInstance {
+
+        const FRONT_REG = /Front: (.*)\n/g;
+        const DECK_REG = /Deck: (.*)\n/g;
+        const ID_REGEX = /ID: (.*)\n/g;
+        const TAGS_REGEX = /Tags: (.*)\n/g;
+        const BACK_REGEX = /Back:\n---\n((\n|.*)*)/g;
+
         const front = this.getMatch(text, FRONT_REG, "Failed to find Front:");
         const deck = this.getMatch(text, DECK_REG, "Failed to find Deck:");
         const id = this.getMatch(text, ID_REGEX, "Failed to find ID:");
@@ -166,6 +166,7 @@ export class CardInstance {
     }
 
     private static resolveImages(text: string, documentPath: string): CardImage[] {
+        const IMAGE_REGEX = /!\[(.*?)\]( |\t)*\((.*?)\)/g
         let match: RegExpMatchArray | null;
         const images: CardImage[] = [];
         while ((match = IMAGE_REGEX.exec(text)) !== null) {

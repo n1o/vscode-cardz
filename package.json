@@ -15,12 +15,9 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:studyNotes",
-		"onCommand:studyNotes.info",
 		"onCommand:studyNotes.newCard",
 		"onCommand:studyNotes.cardCoverage",
-		"onCommand:studyNotes.review",
-		"workspaceContains:**/.cardz.sqllite"
+		"workspaceContains:**/.cards"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -28,21 +25,6 @@
 			{
 				"title": "Study Notes configuration",
 				"properties": {
-					"conf.studyNotes.exclusionPattern": {
-						"type": "array",
-						"default": [
-							"\\.vscode$",
-							"\\.idea$",
-							"\\.DS_Store$",
-							"\\.metals$",
-							"\\.assets",
-							"^(.+)\\.flashCards$",
-							"resources$",
-							".cardz.sqllite"
-						],
-						"description": "Blacklist pattern in StudyNotes side bar",
-						"scope": "window"
-					},
 					"conf.studyNotes.ankiHost": {
 						"type": "string",
 						"default": "http://localhost:8765",
@@ -52,29 +34,7 @@
 				}
 			}
 		],
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "study-notes",
-					"title": "Study Notes",
-					"icon": "media/img/dep.svg"
-				}
-			]
-		},
-		"views": {
-			"study-notes": [
-				{
-					"id": "studyNotes",
-					"name": "Study Notes"
-				}
-			]
-		},
 		"commands": [
-			{
-				"command": "studyNotes.info",
-				"title": "Info",
-				"category": "Study Notes"
-			},
 			{
 				"command": "studyNotes.newCard",
 				"title": "New Card",
@@ -84,47 +44,15 @@
 				"command": "studyNotes.cardCoverage",
 				"title": "Coverage",
 				"category": "Cards"
-			},
-			{
-				"command": "studyNotes.review",
-				"title": "Review",
-				"category": "Notes"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "studyNotes.info",
-				"key": "ctrl+alt+i",
-				"mac": "ctrl+cmd+i"
-			},
-			{
-				"command": "studyNotes.cardCoverage",
-				"key": "ctrl+alt+c",
-				"mac": "ctrl+cmd+c"
-			},
-			{
 				"command": "studyNotes.newCard",
 				"key": "ctrl+alt+n",
 				"mac": "ctrl+cmd+n"
-			},
-			{
-				"command": "studyNotes.review",
-				"key": "ctrl+alt+r",
-				"mac": "ctrl+cmd+r"
 			}
 		],
-		"menus": {
-			"view/item/context": [
-				{
-					"command": "studyNotes.info",
-					"when": "view == studyNotes && viewItem == studyItem"
-				},
-				{
-					"command": "studyNotes.review",
-					"when": "view == studyNotes && viewItem == studyItem"
-				}
-			]
-		},
 		"colors": [
 			{
 				"id": "studyNotes.cardCoverage",

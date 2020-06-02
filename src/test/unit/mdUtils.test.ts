@@ -1,4 +1,4 @@
-import { sanitizeLatex, findAllImagePaths } from '../../util/mdUtils';
+import { sanitizeLatex } from '../../util/mdUtils';
 
 const markdown = `The Gamma Distribution generalizes the Exponential r.v, where the Exponential r.v is the waiting time for the first success under condition of memorylessnes . The gama r.v represents the total waiting time for multiple successes. We can view the Gamma distribution as a sum of i.i.d Exponential r.v.s. Of we can see the Gamma as the continuous analog of the Negative Binomial distribution. 
 
@@ -34,10 +34,5 @@ describe("Markdown santization", () => {
         expect(sanitized.includes("\\((\theta)\\)")).toBe(true);
         expect(sanitized.includes("\\[f(x; k, \theta) = \frac{1}{\theta^k} \frac{1}{\Gamma(k)}x^{k-1} e^{-\frac{x}{\theta}}\\]")).toBe(true);
         expect(sanitized.includes("(\\(\alpha\\))")).toBe(true);
-    });
-
-    it("Should find all the images", () => {
-        const images = findAllImagePaths(markdown);
-        expect(images).toEqual(["../some_folder/someImage.png", "1920px-Gamma_distribution_pdf.svg.png"]);
     });
 });

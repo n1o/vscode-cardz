@@ -1,6 +1,4 @@
-import { CardInstance } from "../../entity/CardInstance";
-import { parentPort } from "worker_threads";
-import { exec } from "child_process";
+import { CardInstance } from "../../service/CardInstance";
 
 const markdown = `---
 Deck: Test

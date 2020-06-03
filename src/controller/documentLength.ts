@@ -38,18 +38,11 @@ export class LengthController {
             
             const { documentLength, documentValid, previousValidDocumentText } = this.checker.checkDocument(documentPath, documentText);
 
+            this.statusbarItem.text = this.remainingLength(documentLength, this.MAX_LENGTH);
+            this.statusbarItem.show();
 
-            if(documentValid) {
-                this.statusbarItem.text = this.remainingLength(documentLength, this.MAX_LENGTH);
-                this.statusbarItem.show();
-            } else {
+            if(!documentValid) {
                 window.showErrorMessage(`${documentName} is too long`);
-
-                const { range: { start }} = doc.lineAt(0);
-                const { range: { end }} = doc.lineAt(doc.lineCount - 1);
-                editor.edit(edit => { 
-                    edit.replace( new Range(start, end) , previousValidDocumentText);
-                });
             }
 
         } else {

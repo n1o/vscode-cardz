@@ -17,7 +17,7 @@
 	"activationEvents": [
 		"onCommand:studyNotes.newCard",
 		"onCommand:studyNotes.cardCoverage",
-		"workspaceContains:**/.cards"
+		"workspaceContains:.cards"
 	],
 	"main": "./out/extension.js",
 	"contributes": {

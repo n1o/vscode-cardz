@@ -1,4 +1,4 @@
-import { CardInstance } from "../../service/CardInstance";
+import { CardInstance } from "../../service/cardsService";
 
 const markdown = `---
 Deck: Test

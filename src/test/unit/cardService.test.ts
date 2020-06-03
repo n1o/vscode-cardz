@@ -1,4 +1,4 @@
-import { CardInstance, CardsService } from "../../service/CardInstance"
+import { CardInstance, CardsService } from "../../service/cardsService"
 const back = `
 Some text
 

@@ -30,6 +30,10 @@
 						"default": "http://localhost:8765",
 						"description": "Anki connect http url",
 						"scope": "window"
+					},
+					"conf.studyNotes.maxLength": {
+						"type": "number",
+						"default": "300"
 					}
 				}
 			}
@@ -80,7 +84,7 @@
 		"ts-jest": "^26.0.0",
 		"ts-node": "^8.3.0",
 		"tslint": "^5.12.1",
-		"typescript": "^3.3.1",
+		"typescript": "^3.8.3",
 		"vscode": "^1.1.37",
 		"webpack": "^4.39.1",
 		"webpack-cli": "^3.3.6"

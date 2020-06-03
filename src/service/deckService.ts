@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as MarkdownIt from 'markdown-it';
 // import { FlashCard } from './cardService';
-import { CardInstance } from './CardInstance';
+import { CardInstance } from './cardsService';
 import { readFileSync } from 'fs';
 import { sanitizeLatex } from '../util/mdUtils';
 

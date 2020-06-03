@@ -127,19 +127,26 @@ export class CardInstance {
         this._images = images;
     }
 
+    private static get BACK_REGEX() {
+        return /Back:\n---\n((\n|.*)*)/g;
+    }
+
+    private static extractBack(text: string) {
+        return this.getMatch(text, this.BACK_REGEX, "Failed to find Back:");
+    }
+
     public static fromMarkdown(text: string, documentPath: string): CardInstance {
 
         const FRONT_REG = /Front: (.*)\n/g;
         const DECK_REG = /Deck: (.*)\n/g;
         const ID_REGEX = /ID: (.*)\n/g;
         const TAGS_REGEX = /Tags: (.*)\n/g;
-        const BACK_REGEX = /Back:\n---\n((\n|.*)*)/g;
 
         const front = this.getMatch(text, FRONT_REG, "Failed to find Front:");
         const deck = this.getMatch(text, DECK_REG, "Failed to find Deck:");
         const id = this.getMatch(text, ID_REGEX, "Failed to find ID:");
         const tags = this.getMatch(text, TAGS_REGEX, "Failed to find Tags:");
-        const back = this.getMatch(text, BACK_REGEX, "Failed to find Back:");
+        const back = this.getMatch(text, this.BACK_REGEX, "Failed to find Back:");
         const images = this.resolveImages(text, documentPath);
 
         return new CardInstance(

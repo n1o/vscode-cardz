@@ -1,7 +1,7 @@
 import { window, commands, Uri, TextDocument, TextEditor, DecorationOptions, Range } from "vscode";
 import { DeckService } from "../service/deckService";
 import decksQuickPick from "../selection/decsPicker";
-import { CardInstance, CardsService } from "../service/CardInstance";
+import { CardInstance, CardsService } from "../service/cardsService";
 import { readdirSync } from "fs";
 import { sep } from "path";
 import { readFileSync } from "fs";

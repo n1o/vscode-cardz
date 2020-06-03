@@ -3,9 +3,11 @@ import { AnkiDeckService } from './service/deckService';
 import { sep } from 'path';
 import { existsSync } from 'fs';
 import { mkdirSync } from 'fs';
-import { CardsService } from './service/CardInstance';
+import { CardsService } from './service/cardsService';
 import { CardsController } from './controller/cardsController';
-import { defaultCipherList } from 'constants';
+import { DocumentChecker } from './service/documentLength';
+import { VsCodeDocumentCache } from './controller/vscodeDocumentCache';
+import { LengthController } from './controller/documentLength';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const rootFolder = vscode.workspace.workspaceFolders![0].uri.path;
@@ -17,12 +19,17 @@ export async function activate(context: vscode.ExtensionContext) {
 		mkdirSync(cardsPath);
 	}
 
-	const ankiHost: string | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.ankiHost");
+	context.workspaceState;
 
+	const ankiHost: string | undefined = vscode.workspace.getConfiguration().get("conf.studyNotes.ankiHost");
+	const maxLength: number = vscode.workspace.getConfiguration().get<number>("conf.studyNotes.maxLength")!;
+
+	const lengthChecker = new DocumentChecker(maxLength, new VsCodeDocumentCache(context.workspaceState));
 	const deckService  = new AnkiDeckService(ankiHost);
 	const cardsService = new CardsService(rootFolder, cardsFolder)
 
 	const cardsController = new CardsController(deckService, cardsService, rootFolder, cardsPath);
+	const lengthController = new LengthController(lengthChecker, rootFolder);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('studyNotes.newCard', () => cardsController.newNote()),
@@ -35,6 +42,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}),
 	);
+
+	context.subscriptions.push(lengthController);
 
 	vscode.workspace.onDidSaveTextDocument(doc => {
 		if(doc.uri.fsPath.startsWith(cardsPath)) {
